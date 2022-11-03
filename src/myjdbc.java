@@ -1,7 +1,7 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.prefs.Preferences;
@@ -19,10 +19,11 @@ Preferences -- a way to store key value pairs persistently so that between proce
     -----------------------
     -- can look up whether a provider exists with try_provider_id(p_id)
     -- can look up whether a member exists AND is not suspended with try_member_id(m_id);
+    -- can insert a new table entry into the services table with arguments for the data.
+
     -----------------------
     future functions
     -----------------------
-    -- can add to the weekly file of services given all column information
     -- can read from the weekly file of services
     -----------------------
 
@@ -30,6 +31,7 @@ Preferences -- a way to store key value pairs persistently so that between proce
 
 
 public class myjdbc {
+    private static Connection conn;
     private static Statement stmt;
     private static ResultSet rs;
 
@@ -37,6 +39,149 @@ public class myjdbc {
     // service_number is primary key for weekly services
     static int service_number = 1;
 
+    // function to read Weekly Services Record table one at a time to do the main accounting procedure, EFT, and summary report
+    static void read_weekly_services()
+    {
+        try
+        {
+            // create provider and member files for the services in the Weekly Service record.
+            rs = stmt.executeQuery("select * from `Weekly Service Record`");
+            // iterate through the weekly service table
+            while (rs.next())
+            {
+                // these variables are good for looking up info in other tables
+                int service_number = rs.getInt("service_number"); // primary key for service
+                String srv_code = rs.getString("service_code");
+                String mem_id = rs.getString("member_id"); // primary key for member
+                String pro_id = rs.getString("provider_id"); // primary key for provider
+
+                // get the date of service, provider name, and service name in preparation for appending to file
+                String dos = rs.getString("service-date");
+                String serv_name, prov_name;
+
+                //we can do another query to the service directory to get the service name.
+                { // GET THE NAME OF THE SERVICE
+                    Statement serv_stmt = conn.createStatement();
+                    String query = "select * from `Service Directory` where service_code=" +srv_code;
+                    ResultSet serv_search = serv_stmt.executeQuery(query);
+                    if (serv_search.next())
+                    {
+                        serv_name = serv_search.getString("service_name");
+
+                    }
+                    else
+                    {
+                        System.out.println("info for report is missing!");
+                        serv_name = "missing_service_name";
+                    }
+                    serv_stmt.close();
+                }
+
+                // we can do another query to the providers table to get the provider name.
+                { // GET THE NAME OF THE PROVIDER
+                    Statement prov_stmt = conn.createStatement();
+                    String query = "select * from Providers where id=" +pro_id;
+                    ResultSet prov_search = prov_stmt.executeQuery(query);
+                    if (prov_search.next())
+                    {
+                        prov_name  = prov_search.getString("name");
+                    }
+                    else
+                    {
+                        System.out.println("info for report is missing!");
+                        prov_name = "missing_provider_name";
+                    }
+                    prov_stmt.close();
+                }
+                //String serv_name = rs.getString("member_id");
+                //String pro_id = rs.getString("provider_id");
+
+                System.out.println("service number " + service_number +" retrieved from table");
+                System.out.println("with service code: " + srv_code);
+                System.out.println( "with provider id: " + pro_id);
+                System.out.println("with member_id: " + mem_id);
+
+                {   // MEMBER REPORT
+                    // lookup the member with the associated member id for their personal details
+                    Statement mem_stmt = conn.createStatement();
+                    String query = "select * from Members where id=" + mem_id;
+                    String member_name, member_combined_address;
+                    ResultSet member_search = mem_stmt.executeQuery(query);
+                    if (member_search.next())
+                    {
+                        member_name = member_search.getString("name");
+                        member_combined_address = member_search.getString("address")
+                                + "\t" +member_search.getString("city")
+                                + "\t" +member_search.getString("state")
+                                + "\t" +member_search.getString("zip");
+                    }
+                    else
+                    {
+                        System.out.println("error. member id not found.");
+                        member_name = "missing_name";
+                        member_combined_address = "missing_address";
+                    }
+
+
+                    // check whether the member has an existing file (current directory)
+                    // if they don't then we need to append the member information at the start.
+                    File member_file = new File(member_name.replaceAll("\\s", ""));
+                    if (!member_file.exists())
+                    {
+                        System.out.println("generating new file for member report...");
+
+                        // write to the file only the initial part -- maybe there is a better way but this currently works
+                        FileWriter fw = new FileWriter(member_name.replaceAll("\\s",""), true);
+                        BufferedWriter bw = new BufferedWriter(fw);
+                        bw.write("Name: " + member_name +
+                                     "\nMember Number: " + mem_id +
+                                     "\nAddress:" + member_combined_address+ '\n');
+                        bw.close();
+                        fw.close();
+                    }
+
+
+                    // open another writer to write only the service information part
+                    FileWriter fw = new FileWriter(member_name.replaceAll("\\s",""), true);
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    bw.write("service " + serv_name + " on date " + dos + " with provider " + prov_name);
+                    bw.newLine();
+                    bw.close();
+
+
+                }
+
+                {   // PROVIDER REPORT
+                    // append to the provider file with the information:
+                    // -current date/time
+                    // -date of service
+                    // -member name
+                    // -member number
+                    // -service code
+                    // -fee to be paid
+                    // add to the total consultations
+                    // add the fee to the total provider fees.
+                }
+
+                {   // EFT FILE
+                    // provider name, provider id, and fee
+                }
+
+                {   // SUMMARY REPORT
+                    // lists providers and total fees
+                }
+            }
+
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    
+    
     public static void insert_service_record(LocalDate service_date, String provider_id, String member_id, String service_code, String comments)
     {
         try
@@ -124,6 +269,7 @@ public class myjdbc {
 
     public static void main(String[] args)
     {
+        // load preferences for weekly_service table -- persistent value
         Preferences userPreferences = Preferences.userRoot();
         service_number = userPreferences.getInt("service_number", 0);
         if (service_number == 0) // there was no service_number saved
@@ -133,31 +279,46 @@ public class myjdbc {
         }
 
 
-        String p_id = "123456789";
-        String m_id = "112233";
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "wes", "potato");
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "wes", "potato");
             stmt = conn.createStatement();
         }
-        catch (Exception e)
+        catch (Exception e) // there was a problem in the connection to database. (probably the driver)
         {
             e.printStackTrace();
         }
 
+
+        // example input to database to validate a member or provider
+        String p_id = "123456789";
+        String m_id = "112233";
         boolean provider_access = try_provider_id(p_id);
         boolean member_billing = try_member_id(m_id);
-        
         if (provider_access && member_billing)
         {
             System.out.println("Access granted to member billing\n");
         }
 
+        /* example information to input into service table
         String provider_id = "123456788";
         String member_id = "123456788";
         String service_code = "656565";
         String comments = "example comment";
         insert_service_record(LocalDate.now(), provider_id, member_id, service_code, comments);
+        */
+
+        read_weekly_services(); // do the main accounting procedure, EFT, and summary report
+
+        // close connection to database
+        try
+        {
+            conn.close();
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 }
