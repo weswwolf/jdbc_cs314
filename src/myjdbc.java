@@ -29,13 +29,92 @@ Preferences -- a way to store key value pairs persistently so that between proce
 
 */
 
+class fee
+{
+    float f;
+}
 
 public class myjdbc {
     private static Connection conn;
     private static Statement stmt;
     private static ResultSet rs;
 
+    // use the member id to find the member name and combined_address
+    static String [] lookup_member_name_address(String mem_id)
+    {
+        try
+        {
+        Statement mem_stmt = conn.createStatement();
+        String query = "select * from Members where id=" + mem_id;
+        String member_name, member_combined_address;
 
+            ResultSet member_search = mem_stmt.executeQuery(query);
+            if (member_search.next())
+            {
+                member_name = member_search.getString("name");
+                member_combined_address = member_search.getString("address")
+                        + "\t" +member_search.getString("city")
+                        + "\t" +member_search.getString("state")
+                        + "\t" +member_search.getString("zip");
+                return new String[] {member_name, member_combined_address};
+            }
+
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return new String[] {"missing-member-name", "missing-member-combined-address"};
+    }
+
+    // get the provider name given the provider id
+    static String[] lookup_provider_name_address(String pro_id)
+    {
+        try
+        {
+            Statement pro_stmt = conn.createStatement();
+            String query = "select * from Providers where id=" + pro_id;
+            ResultSet provider_search = pro_stmt.executeQuery(query);
+            if (provider_search.next())
+            {
+                String provider_name = provider_search.getString("name");
+                String member_combined_address = provider_search.getString("address")
+                        + "\t" +provider_search.getString("city")
+                        + "\t" +provider_search.getString("state")
+                        + "\t" +provider_search.getString("zip");
+                return new String[] {provider_name, member_combined_address};
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return new String[] {"missing-provider-name", "missing-provider-combined-address"};
+    }
+
+    static String lookup_service_name_and_fee(String serv_code, fee f)
+    {
+        try
+        {
+            Statement serv_stmt = conn.createStatement();
+            String query = "select * from `Service Directory` where service_code=" + serv_code;
+            ResultSet serv_search = serv_stmt.executeQuery(query);
+            if (serv_search.next())
+            {
+                String service_name = serv_search.getString("service_name");
+                f.f = serv_search.getInt("service_fee"); // reference value is not changed
+                serv_stmt.close();
+                return service_name;
+            }
+            serv_stmt.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return "missing-service-name";
+    }
     // service_number is primary key for weekly services
     static int service_number = 1;
 
@@ -50,96 +129,54 @@ public class myjdbc {
             while (rs.next())
             {
                 // these variables are good for looking up info in other tables
-                int service_number = rs.getInt("service_number"); // primary key for service
+                //int service_number = rs.getInt("service_number"); // primary key for service
                 String srv_code = rs.getString("service_code");
                 String mem_id = rs.getString("member_id"); // primary key for member
                 String pro_id = rs.getString("provider_id"); // primary key for provider
 
+
                 // get the date of service, provider name, and service name in preparation for appending to file
                 String dos = rs.getString("service-date");
-                String serv_name, prov_name;
 
                 //we can do another query to the service directory to get the service name.
-                { // GET THE NAME OF THE SERVICE
-                    Statement serv_stmt = conn.createStatement();
-                    String query = "select * from `Service Directory` where service_code=" +srv_code;
-                    ResultSet serv_search = serv_stmt.executeQuery(query);
-                    if (serv_search.next())
-                    {
-                        serv_name = serv_search.getString("service_name");
+                fee provider_fee = new fee();
+                String serv_name = lookup_service_name_and_fee(srv_code, provider_fee);
 
-                    }
-                    else
-                    {
-                        System.out.println("info for report is missing!");
-                        serv_name = "missing_service_name";
-                    }
-                    serv_stmt.close();
-                }
+                // get the provider information for this service
+                String[] provider_info = lookup_provider_name_address(pro_id);
+                String prov_name = provider_info[0];
+                //String provider_address = provider_info[1]; unused so far
 
-                // we can do another query to the providers table to get the provider name.
-                { // GET THE NAME OF THE PROVIDER
-                    Statement prov_stmt = conn.createStatement();
-                    String query = "select * from Providers where id=" +pro_id;
-                    ResultSet prov_search = prov_stmt.executeQuery(query);
-                    if (prov_search.next())
-                    {
-                        prov_name  = prov_search.getString("name");
-                    }
-                    else
-                    {
-                        System.out.println("info for report is missing!");
-                        prov_name = "missing_provider_name";
-                    }
-                    prov_stmt.close();
-                }
-                //String serv_name = rs.getString("member_id");
-                //String pro_id = rs.getString("provider_id");
-
+                /*
+                // simple output for debug
                 System.out.println("service number " + service_number +" retrieved from table");
                 System.out.println("with service code: " + srv_code);
                 System.out.println( "with provider id: " + pro_id);
                 System.out.println("with member_id: " + mem_id);
+                */
 
-                {   // MEMBER REPORT
-                    // lookup the member with the associated member id for their personal details
-                    Statement mem_stmt = conn.createStatement();
-                    String query = "select * from Members where id=" + mem_id;
-                    String member_name, member_combined_address;
-                    ResultSet member_search = mem_stmt.executeQuery(query);
-                    if (member_search.next())
-                    {
-                        member_name = member_search.getString("name");
-                        member_combined_address = member_search.getString("address")
-                                + "\t" +member_search.getString("city")
-                                + "\t" +member_search.getString("state")
-                                + "\t" +member_search.getString("zip");
-                    }
-                    else
-                    {
-                        System.out.println("error. member id not found.");
-                        member_name = "missing_name";
-                        member_combined_address = "missing_address";
-                    }
-
-
+                { // MEMBER REPORT (possibly its own function)
+                    // lookup the member with the associated member id for their personal details (name, address)
+                    String[] member_info = lookup_member_name_address(mem_id);
+                    String member_name = member_info[0]; // alias for easy reading below
+                    // member_info[1] == address, city, state, zip
                     // check whether the member has an existing file (current directory)
                     // if they don't then we need to append the member information at the start.
-                    File member_file = new File(member_name.replaceAll("\\s", ""));
+                    // it is convenient to use the members name as their file name, as long as no two members have the exact same name.
+                    File member_file = new File(member_name.replaceAll("\\s", "")); // get rid of spaces in the name for the file
                     if (!member_file.exists())
                     {
+                        // member file doesn't exist. we will make a new file
                         System.out.println("generating new file for member report...");
-
                         // write to the file only the initial part -- maybe there is a better way but this currently works
                         FileWriter fw = new FileWriter(member_name.replaceAll("\\s",""), true);
                         BufferedWriter bw = new BufferedWriter(fw);
                         bw.write("Name: " + member_name +
                                      "\nMember Number: " + mem_id +
-                                     "\nAddress:" + member_combined_address+ '\n');
+                                     "\nAddress: " + member_info[1] + '\n');
                         bw.close();
                         fw.close();
                     }
-
 
                     // open another writer to write only the service information part
                     FileWriter fw = new FileWriter(member_name.replaceAll("\\s",""), true);
@@ -147,11 +184,10 @@ public class myjdbc {
                     bw.write("service " + serv_name + " on date " + dos + " with provider " + prov_name);
                     bw.newLine();
                     bw.close();
-
-
+                    fw.close();
                 }
 
-                {   // PROVIDER REPORT
+                {   // PROVIDER REPORT -- for the same service
                     // append to the provider file with the information:
                     // -current date/time
                     // -date of service
@@ -164,20 +200,43 @@ public class myjdbc {
                 }
 
                 {   // EFT FILE
-                    // provider name, provider id, and fee
+                    // get a string for the current date to mark at start of file and use for file name
+                    String date = String.valueOf(LocalDate.now());
+                    File eft_file = new File("EFT"+date); // get rid of spaces in the name for the file
+                    if (!eft_file.exists())
+                    {
+                        // member file doesn't exist. we will make a new file
+                        System.out.println("generating new file for weekly EFT...");
+                        // write to the file only the initial part -- maybe there is a better way but this currently works
+                        FileWriter fw = new FileWriter("EFT" + date, true);
+                        BufferedWriter bw = new BufferedWriter(fw);
+                        bw.write("Start date: " + LocalDate.now().minusDays(7)+"\n");
+                        bw.write("End date: " + date + '\n');
+                        bw.close();
+                        fw.close();
+                    }
+
+                    // open another writer to write only the service information part
+                    FileWriter fw = new FileWriter("EFT" + date, true);
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    bw.write("provider " + prov_name + " with provider id " + pro_id
+                            + " has fee: " + provider_fee.f + " for service on " + dos );
+
+                    bw.newLine();
+                    bw.close();
+                    fw.close();                    // provider name, provider id, and fee
                 }
 
                 {   // SUMMARY REPORT
                     // lists providers and total fees
                 }
             }
-
-
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
+        // end weekly_function
     }
 
     
