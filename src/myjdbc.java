@@ -20,15 +20,17 @@ Preferences -- a way to store key value pairs persistently so that between proce
     -- can look up whether a provider exists with try_provider_id(p_id)
     -- can look up whether a member exists AND is not suspended with try_member_id(m_id);
     -- can insert a new table entry into the services table with arguments for the data.
-
+    -- can read from the weekly table of services
     -----------------------
     future functions
     -----------------------
-    -- can read from the weekly file of services
+    -- make provider files
+    -- do summary report
     -----------------------
 
 */
 
+// the fee class is useful because we can't pass primitives by reference. We can pass objects by reference though.
 class fee
 {
     float f;
@@ -39,7 +41,7 @@ public class myjdbc {
     private static Statement stmt;
     private static ResultSet rs;
 
-    // use the member id to find the member name and combined_address
+    // use the member id to find the member name and combined_address and return them in a string array
     static String [] lookup_member_name_address(String mem_id)
     {
         try
@@ -68,7 +70,7 @@ public class myjdbc {
         return new String[] {"missing-member-name", "missing-member-combined-address"};
     }
 
-    // get the provider name given the provider id
+    // get the provider name and combined address given the provider id and return them in a string array
     static String[] lookup_provider_name_address(String pro_id)
     {
         try
@@ -93,6 +95,7 @@ public class myjdbc {
         return new String[] {"missing-provider-name", "missing-provider-combined-address"};
     }
 
+    // use the service code to return the name as a string and fill the fee with the value from the service directory.
     static String lookup_service_name_and_fee(String serv_code, fee f)
     {
         try
@@ -115,7 +118,73 @@ public class myjdbc {
         }
         return "missing-service-name";
     }
-    // service_number is primary key for weekly services
+
+    //  if the file does not exist, writes the initial details then the service details
+    // if the file does exist, only writes the service details. this pattern is followed for the main accounting procedure.
+    //
+    static void write_to_file(String file_name, String service_details, String initial_details)
+    {
+        try
+        {
+            File output_file = new File(file_name); // get rid of spaces in the name for the file
+            if (!output_file.exists())
+            {
+                // member file doesn't exist. we will make a new file
+                //System.out.println("generating new file for member report...");
+                // write to the file only the initial part -- maybe there is a better way but this currently works
+                FileWriter fw = new FileWriter(file_name, true);
+                BufferedWriter bw = new BufferedWriter(fw);
+                bw.write(initial_details);
+                bw.close();
+                fw.close();
+            }
+
+            // open another writer to write only the service information part
+            FileWriter fw = new FileWriter(file_name, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(service_details);
+            bw.newLine();
+            bw.close();
+            fw.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    // for one service, writes the service to the member report file.
+    // if the file does not yet exist, appends initial details at the start.
+    static void member_report(String prov_name, String dos, String serv_name, String mem_id)
+    {
+        // write to a file that may already exist, details of the service.
+        // lookup the member with the associated member id for their personal details (name, address)
+        String[] member_info = lookup_member_name_address(mem_id);
+        String member_name = member_info[0]; // alias for easy reading below
+        String file_name = member_name.replaceAll("\\s", "");
+        // member_info[1] == address, city, state, zip
+        // check whether the member has an existing file (current directory)
+        // if they don't then we need to append the member information at the start.
+        // it is convenient to use the members name as their file name, as long as no two members have the exact same name.
+        String service_details = serv_name + " was done with provider " + prov_name + " on date " + dos;
+        String initial_details = "Record of Service for " + member_name +
+                                 "\nMember Number: " + mem_id +
+                                 "\nAddress: " + member_info[1] + '\n';
+        // write to file the details of service and optionally the initial details
+        write_to_file(file_name, service_details, initial_details);
+    }
+
+    // append the given argument information to the eft. if the eft does not yet exist, append the initial information.
+    public static void eft(String prov_name, String pro_id, String dos, fee provider_fee)
+    {
+        String date = String.valueOf(LocalDate.now());
+        String file_name = "EFT-"+date;
+        String initial_details = "Start date: " + LocalDate.now().minusDays(7)+"\n"
+                + "End date: " + LocalDate.now() + '\n';
+        String service_details = "provider " + prov_name + " with provider id " + pro_id
+                + " has fee: " + provider_fee.f + " for service on " + dos;
+        write_to_file(file_name, service_details, initial_details);
+    }
     static int service_number = 1;
 
     // function to read Weekly Services Record table one at a time to do the main accounting procedure, EFT, and summary report
@@ -133,20 +202,15 @@ public class myjdbc {
                 String srv_code = rs.getString("service_code");
                 String mem_id = rs.getString("member_id"); // primary key for member
                 String pro_id = rs.getString("provider_id"); // primary key for provider
-
-
                 // get the date of service, provider name, and service name in preparation for appending to file
                 String dos = rs.getString("service-date");
-
                 //we can do another query to the service directory to get the service name.
                 fee provider_fee = new fee();
                 String serv_name = lookup_service_name_and_fee(srv_code, provider_fee);
-
                 // get the provider information for this service
                 String[] provider_info = lookup_provider_name_address(pro_id);
                 String prov_name = provider_info[0];
                 //String provider_address = provider_info[1]; unused so far
-
                 /*
                 // simple output for debug
                 System.out.println("service number " + service_number +" retrieved from table");
@@ -155,38 +219,11 @@ public class myjdbc {
                 System.out.println("with member_id: " + mem_id);
                 */
 
-                { // MEMBER REPORT (possibly its own function)
-                    // lookup the member with the associated member id for their personal details (name, address)
-                    String[] member_info = lookup_member_name_address(mem_id);
-                    String member_name = member_info[0]; // alias for easy reading below
-                    // member_info[1] == address, city, state, zip
-                    // check whether the member has an existing file (current directory)
-                    // if they don't then we need to append the member information at the start.
-                    // it is convenient to use the members name as their file name, as long as no two members have the exact same name.
-                    File member_file = new File(member_name.replaceAll("\\s", "")); // get rid of spaces in the name for the file
-                    if (!member_file.exists())
-                    {
-                        // member file doesn't exist. we will make a new file
-                        System.out.println("generating new file for member report...");
-                        // write to the file only the initial part -- maybe there is a better way but this currently works
-                        FileWriter fw = new FileWriter(member_name.replaceAll("\\s",""), true);
-                        BufferedWriter bw = new BufferedWriter(fw);
-                        bw.write("Name: " + member_name +
-                                     "\nMember Number: " + mem_id +
-                                     "\nAddress: " + member_info[1] + '\n');
-                        bw.close();
-                        fw.close();
-                    }
+                // lookup the member with their member id for their personal details (name, address)
+                // then write to file about the service details
+                member_report(prov_name, dos, serv_name, mem_id);
 
-                    // open another writer to write only the service information part
-                    FileWriter fw = new FileWriter(member_name.replaceAll("\\s",""), true);
-                    BufferedWriter bw = new BufferedWriter(fw);
-                    bw.write("service " + serv_name + " on date " + dos + " with provider " + prov_name);
-                    bw.newLine();
-                    bw.close();
-                    fw.close();
-                }
-
+                // do the same for the provider, but with slightly different information (look at member report for inspiration)
                 {   // PROVIDER REPORT -- for the same service
                     // append to the provider file with the information:
                     // -current date/time
@@ -199,33 +236,8 @@ public class myjdbc {
                     // add the fee to the total provider fees.
                 }
 
-                {   // EFT FILE
-                    // get a string for the current date to mark at start of file and use for file name
-                    String date = String.valueOf(LocalDate.now());
-                    File eft_file = new File("EFT"+date); // get rid of spaces in the name for the file
-                    if (!eft_file.exists())
-                    {
-                        // member file doesn't exist. we will make a new file
-                        System.out.println("generating new file for weekly EFT...");
-                        // write to the file only the initial part -- maybe there is a better way but this currently works
-                        FileWriter fw = new FileWriter("EFT" + date, true);
-                        BufferedWriter bw = new BufferedWriter(fw);
-                        bw.write("Start date: " + LocalDate.now().minusDays(7)+"\n");
-                        bw.write("End date: " + date + '\n');
-                        bw.close();
-                        fw.close();
-                    }
-
-                    // open another writer to write only the service information part
-                    FileWriter fw = new FileWriter("EFT" + date, true);
-                    BufferedWriter bw = new BufferedWriter(fw);
-                    bw.write("provider " + prov_name + " with provider id " + pro_id
-                            + " has fee: " + provider_fee.f + " for service on " + dos );
-
-                    bw.newLine();
-                    bw.close();
-                    fw.close();                    // provider name, provider id, and fee
-                }
+                // EFT
+                eft(prov_name, pro_id, dos, provider_fee);
 
                 {   // SUMMARY REPORT
                     // lists providers and total fees
