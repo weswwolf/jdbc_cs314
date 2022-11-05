@@ -33,10 +33,7 @@
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files>
-      <object connection-id="6006fc8e-8380-4f21-8ac8-3351758a27bc" object-ref="schemas/ChocAn/tables/Members" />
-      <object connection-id="6006fc8e-8380-4f21-8ac8-3351758a27bc" object-ref="schemas/mysql/tables/user" />
-    </open-files>
+    <open-files />
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="6006fc8e-8380-4f21-8ac8-3351758a27bc" />

@@ -40,9 +40,11 @@ public class myjdbc {
     private static Connection conn;
     private static Statement stmt;
     private static ResultSet rs;
+    static int service_number = 1;
 
     // use the member id to find the member name and combined_address and return them in a string array
-    static String [] lookup_member_name_address(String mem_id)
+    // this could be refactored to return the data instead to a member object instead of a string array
+    static String [] fill_member_data(String mem_id)
     {
         try
         {
@@ -60,8 +62,6 @@ public class myjdbc {
                         + "\t" +member_search.getString("zip");
                 return new String[] {member_name, member_combined_address};
             }
-
-
         }
         catch (Exception e)
         {
@@ -71,7 +71,8 @@ public class myjdbc {
     }
 
     // get the provider name and combined address given the provider id and return them in a string array
-    static String[] lookup_provider_name_address(String pro_id)
+    // this could be refactored to return the data to a provider object instead of a string array
+    static String[] fill_provider_data(String pro_id)
     {
         try
         {
@@ -96,7 +97,8 @@ public class myjdbc {
     }
 
     // use the service code to return the name as a string and fill the fee with the value from the service directory.
-    static String lookup_service_name_and_fee(String serv_code, fee f)
+    // this could be refactored to return a Service object instead of a fee f and string name
+    static String fill_service_data(String serv_code, fee f)
     {
         try
         {
@@ -121,7 +123,6 @@ public class myjdbc {
 
     //  if the file does not exist, writes the initial details then the service details
     // if the file does exist, only writes the service details. this pattern is followed for the main accounting procedure.
-    //
     static void write_to_file(String file_name, String service_details, String initial_details)
     {
         try
@@ -159,7 +160,7 @@ public class myjdbc {
     {
         // write to a file that may already exist, details of the service.
         // lookup the member with the associated member id for their personal details (name, address)
-        String[] member_info = lookup_member_name_address(mem_id);
+        String[] member_info = fill_member_data(mem_id);
         String member_name = member_info[0]; // alias for easy reading below
         String file_name = member_name.replaceAll("\\s", "");
         // member_info[1] == address, city, state, zip
@@ -185,7 +186,7 @@ public class myjdbc {
                 + " has fee: " + provider_fee.f + " for service on " + dos;
         write_to_file(file_name, service_details, initial_details);
     }
-    static int service_number = 1;
+
 
     // function to read Weekly Services Record table one at a time to do the main accounting procedure, EFT, and summary report
     static void read_weekly_services()
@@ -206,9 +207,9 @@ public class myjdbc {
                 String dos = rs.getString("service-date");
                 //we can do another query to the service directory to get the service name.
                 fee provider_fee = new fee();
-                String serv_name = lookup_service_name_and_fee(srv_code, provider_fee);
+                String serv_name = fill_service_data(srv_code, provider_fee);
                 // get the provider information for this service
-                String[] provider_info = lookup_provider_name_address(pro_id);
+                String[] provider_info = fill_provider_data(pro_id);
                 String prov_name = provider_info[0];
                 //String provider_address = provider_info[1]; unused so far
                 /*
@@ -252,8 +253,12 @@ public class myjdbc {
     }
 
     
-    
-    public static void insert_service_record(LocalDate service_date, String provider_id, String member_id, String service_code, String comments)
+    // this should be refactored so that it takes only a service as argument
+    // takes the information for one service as argument, and inserts it into the weekly service record.
+    // returns:
+    //  success = 0
+    //  database issue = 1
+    public static int insert_service_record(LocalDate service_date, String provider_id, String member_id, String service_code, String comments)
     {
         try
         {
@@ -262,7 +267,6 @@ public class myjdbc {
             service_number = userPreferences.getInt("service_number", 0) + 1; // service_number++;
             // set the new service number
             userPreferences.putInt("service_number", service_number);
-
 
             // this is the query to insert a service record into the database
             // one of the entries is the service_number which is stored persistently using Preferences
@@ -276,15 +280,22 @@ public class myjdbc {
         catch (Exception e)
         {
             e.printStackTrace();
+            return 1; // problem with database query
         }
+        return 0; // success
     }
 
 
 
-    // return true if the provider id is found
-    public static boolean try_provider_id(String p_id)
+    /* try to validate a provider by querying the database with the providers id.
+        return:
+        provider validated = 0
+        invalid provider id = 2
+        database issue = 1
+     */
+    public static int validate_provider(String p_id)
     {
-        boolean exist = false; // return value
+        boolean exist = false;
         try
         {
             rs = stmt.executeQuery("select * from Providers where id=" + p_id);
@@ -296,46 +307,54 @@ public class myjdbc {
         }
         if (exist)
         {
-            System.out.println("provider id accepted by database: " + p_id);
+            //System.out.println("provider id accepted by database: " + p_id);
+            return 0; // success
         }
         else
         {
-            System.out.println("did not find provider id: " + p_id);
-            System.out.println("please check that you have the right number");
+            // terminal side output removed
+            // invalid provider
+            return 2;
         }
-        return exist;
     }
 
-    // return true if the member id is found (AND not suspended)
-    public static boolean try_member_id(String m_id)
+    /* try to validate a member by querying the database with the members id.
+        return:
+        success = 0
+        suspended = 4
+        invalid member id = 3
+        database issue = 1
+     */
+    public static int validate_member(String m_id)
     {
-        boolean valid_member; // return value
+        boolean first_index_exists; // set to true if the first index of the table exists. false otherwise.
         int suspended; // flag changes to 1 when suspended
-
         try
         {
             rs = stmt.executeQuery("select * from Members where id=" + m_id);
-            valid_member = rs.next(); // move to first row
+            first_index_exists = rs.next(); // move to first row
             suspended = rs.getInt("suspended");
-            String member_name = rs.getString("name");
-            if (valid_member)
+            //String member_name = rs.getString("name");
+            if (first_index_exists)
             {
-                System.out.println("found member id: " + m_id);
+                // the member is found
+                // check member suspended
                 if (suspended == 1) {
-                    System.out.println("member " + member_name + " with id: " + m_id + " is suspended");
-                    return false;
+                    // member is suspended
+                    return 4;
                 }
-                System.out.println("member " + member_name + " with id: " + m_id + " is validated");
-                return true;
+                //member is validated
+                return 0;
             }
         }
         catch (Exception e)
         {
             //e.printStackTrace();
+            // problem connecting to database!
+            return 1;
         }
-        System.out.println("did not find member id: " + m_id);
-        System.out.println("please check that you have the right number");
-        return false;
+        // Invalid member
+        return 3;
     }
 
     public static void main(String[] args)
@@ -365,9 +384,11 @@ public class myjdbc {
         // example input to database to validate a member or provider
         String p_id = "123456789";
         String m_id = "112233";
-        boolean provider_access = try_provider_id(p_id);
-        boolean member_billing = try_member_id(m_id);
-        if (provider_access && member_billing)
+        int provider_access = validate_provider(p_id);
+        int member_billing = validate_member(m_id);
+
+        // return value of zero indicates success
+        if (provider_access == 0 && member_billing == 0)
         {
             System.out.println("Access granted to member billing\n");
         }
