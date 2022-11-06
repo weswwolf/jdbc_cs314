@@ -372,7 +372,7 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "user", "pass");
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "user_dif", "pass_dif");
             stmt = conn.createStatement();
         }
         catch (Exception e) // there was a problem in the connection to database. (probably the driver)
