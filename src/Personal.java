@@ -16,7 +16,7 @@ abstract class Personal
             zip = "no-zip";
     }
     
-    void set_all_personal(String name_, String address_, String city_, String state_, String zip_)
+    public void set_all_personal(String name_, String address_, String city_, String state_, String zip_)
     {
         name = name_;
         address = address_;
