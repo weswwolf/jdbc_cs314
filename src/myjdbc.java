@@ -42,8 +42,24 @@ public class myjdbc {
     private static ResultSet rs;
     static int service_number = 1;
 
+    // close the connection to the database.
+    // should be done once at the end of the session
+    // also useful for unit testing to create a database error.
+    static void end_connection()
+    {
+        try
+        {
+            conn.close();
+            stmt.close();
+        }
+        catch (Exception e)
+        {
+            // do nothing
+        }
+    }
 
-
+    // query the database for a member_id matching the argument
+    // if found, fill that member data into the argument Member m
     static Boolean fill_member_data(String mem_id, Member m)
     {
         try
@@ -72,37 +88,6 @@ public class myjdbc {
         return false;
     }
 
-    /* deprecated, look above
-    // use the member id to find the member name and combined_address and return them in a string array
-    // this could be refactored to return the data instead to a member object instead of a string array
-    static String [] fill_member_data(String mem_id)
-    {
-        try
-        {
-        Statement mem_stmt = conn.createStatement();
-        String query = "select * from Members where id=" + mem_id;
-        String member_name, member_combined_address;
-
-            ResultSet member_search = mem_stmt.executeQuery(query);
-            if (member_search.next())
-            {
-                member_name = member_search.getString("name");
-                member_combined_address = member_search.getString("address")
-                        + "\t" +member_search.getString("city")
-                        + "\t" +member_search.getString("state")
-                        + "\t" +member_search.getString("zip");
-                return new String[] {member_name, member_combined_address};
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return new String[] {"missing-member-name", "missing-member-combined-address"};
-    }
-
-     */
-
     // return false if no matching provider found -- otherwise put the provider data into fill
     static Boolean fill_provider_data(String pro_id, Provider fill)
     {
@@ -129,35 +114,6 @@ public class myjdbc {
         // no matching provider was found...
         return false;
     }
-
-
-    /* deprecated, look above
-    // get the provider name and combined address given the provider id and return them in a string array
-    // this could be refactored to return the data to a provider object instead of a string array
-    static String[] fill_provider_data(String pro_id)
-    {
-        try
-        {
-            Statement pro_stmt = conn.createStatement();
-            String query = "select * from Providers where id=" + pro_id;
-            ResultSet provider_search = pro_stmt.executeQuery(query);
-            if (provider_search.next())
-            {
-                String provider_name = provider_search.getString("name");
-                String member_combined_address = provider_search.getString("address")
-                        + "\t" +provider_search.getString("city")
-                        + "\t" +provider_search.getString("state")
-                        + "\t" +provider_search.getString("zip");
-                return new String[] {provider_name, member_combined_address};
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return new String[] {"missing-provider-name", "missing-provider-combined-address"};
-    }
-    */
 
     // use the service code to return the name as a string and fill the fee with the value from the service directory.
     // this could be refactored to return a Service object instead of a fee f and string name
@@ -282,20 +238,11 @@ public class myjdbc {
                 fee provider_fee = new fee();
                 String serv_name = fill_service_data(srv_code, provider_fee);
                 // get the provider information for this service
-                //String[] provider_info = fill_provider_data(pro_id);
                 if (!fill_provider_data(pro_id,p))
                 {
                     System.out.println("error filling provider data.");
                 }
-                //String prov_name = provider_info[0];
-                //String provider_address = provider_info[1]; unused so far
-                /*
-                // simple output for debug
-                System.out.println("service number " + service_number +" retrieved from table");
-                System.out.println("with service code: " + srv_code);
-                System.out.println( "with provider id: " + pro_id);
-                System.out.println("with member_id: " + mem_id);
-                */
+
 
                 // lookup the member with their member id for their personal details (name, address)
                 // then write to file about the service details
@@ -341,7 +288,7 @@ public class myjdbc {
         {
             // get the preferences to set the service_record number (primary key)
             Preferences userPreferences = Preferences.userRoot();
-            service_number = userPreferences.getInt("service_number", 0) + 1; // service_number++;
+            service_number = Preferences.userRoot().getInt("service_number", 0) + 1; // service_number++;
             // set the new service number
             userPreferences.putInt("service_number", service_number);
 
@@ -357,7 +304,7 @@ public class myjdbc {
         catch (Exception e)
         {
             e.printStackTrace();
-            return 1; // problem with database query
+            return 1; // problem with query
         }
         return 0; // success
     }
@@ -372,7 +319,7 @@ public class myjdbc {
      */
     public static int validate_provider(String p_id)
     {
-        boolean exist = false;
+        boolean exist;
         try
         {
             rs = stmt.executeQuery("select * from Providers where id=" + p_id);
@@ -381,6 +328,7 @@ public class myjdbc {
         catch (Exception e)
         {
             //e.printStackTrace();
+            return 1;
         }
         if (exist)
         {
@@ -410,10 +358,11 @@ public class myjdbc {
         {
             rs = stmt.executeQuery("select * from Members where id=" + m_id);
             first_index_exists = rs.next(); // move to first row
-            suspended = rs.getInt("suspended");
+            //suspended = rs.getInt("suspended");
             //String member_name = rs.getString("name");
             if (first_index_exists)
             {
+                suspended = rs.getInt("suspended");
                 // the member is found
                 // check member suspended
                 if (suspended == 1) {
@@ -423,6 +372,7 @@ public class myjdbc {
                 //member is validated
                 return 0;
             }
+            return 3;
         }
         catch (Exception e)
         {
@@ -430,11 +380,28 @@ public class myjdbc {
             // problem connecting to database!
             return 1;
         }
-        // Invalid member
-        return 3;
+        // unreachable
     }
 
-    public static void main(String[] args)
+    // THIS SHOULD ONLY BE DONE ONCE. WE ONLY NEED ONE CONNECTION.
+    public static boolean connect_to_database()
+    {
+        try // initialize connection to database
+        {
+            // enter ip address of server and user/password
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "potato");
+            stmt = conn.createStatement();
+            return true;
+        }
+        catch (Exception e) // there was a problem in the connection to database. (probably the driver)
+        {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // THIS SHOULD ONLY BE DONE ONCE AT THE START.
+    public static void load_preferences()
     {
         // load preferences for weekly_service table -- persistent value
         Preferences userPreferences = Preferences.userRoot();
@@ -444,19 +411,12 @@ public class myjdbc {
             // save the service number key and value
             userPreferences.putInt("service_number", service_number);
         }
+    }
 
-
-        try // initialize connection to database
-        {
-            // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "potato");
-            stmt = conn.createStatement();
-        }
-        catch (Exception e) // there was a problem in the connection to database. (probably the driver)
-        {
-            e.printStackTrace();
-        }
-
+    public static void main(String[] args)
+    {
+        load_preferences();
+        connect_to_database();
 
         // example input to database to validate a member or provider
         String p_id = "123456789";
