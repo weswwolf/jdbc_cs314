@@ -42,6 +42,37 @@ public class myjdbc {
     private static ResultSet rs;
     static int service_number = 1;
 
+
+
+    static Boolean fill_member_data(String mem_id, Member m)
+    {
+        try
+        {
+            Statement mem_stmt = conn.createStatement();
+            String query = "select * from Members where id=" + mem_id;
+            //String member_name, member_combined_address;
+
+            ResultSet member_search = mem_stmt.executeQuery(query);
+            if (member_search.next())
+            {   // hit
+                m.set_all_personal(member_search.getString("name"),
+                        member_search.getString("address"),
+                        member_search.getString("city"),
+                        member_search.getString("state"),
+                        member_search.getString("zip"));
+                m.member_id = mem_id;
+                return true;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        // no matching member
+        return false;
+    }
+
+    /* deprecated, look above
     // use the member id to find the member name and combined_address and return them in a string array
     // this could be refactored to return the data instead to a member object instead of a string array
     static String [] fill_member_data(String mem_id)
@@ -70,6 +101,37 @@ public class myjdbc {
         return new String[] {"missing-member-name", "missing-member-combined-address"};
     }
 
+     */
+
+    // return false if no matching provider found -- otherwise put the provider data into fill
+    static Boolean fill_provider_data(String pro_id, Provider fill)
+    {
+        try
+        {
+            Statement pro_stmt = conn.createStatement();
+            String query = "select * from Providers where id=" + pro_id;
+            ResultSet provider_search = pro_stmt.executeQuery(query);
+            if (provider_search.next())
+            {   // hit
+                fill.set_all_personal(provider_search.getString("name"),
+                        provider_search.getString("address"),
+                        provider_search.getString("city"),
+                        provider_search.getString("state"),
+                        provider_search.getString("zip"));
+                fill.provider_id = pro_id;
+                return true;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        // no matching provider was found...
+        return false;
+    }
+
+
+    /* deprecated, look above
     // get the provider name and combined address given the provider id and return them in a string array
     // this could be refactored to return the data to a provider object instead of a string array
     static String[] fill_provider_data(String pro_id)
@@ -95,6 +157,7 @@ public class myjdbc {
         }
         return new String[] {"missing-provider-name", "missing-provider-combined-address"};
     }
+    */
 
     // use the service code to return the name as a string and fill the fee with the value from the service directory.
     // this could be refactored to return a Service object instead of a fee f and string name
@@ -158,25 +221,33 @@ public class myjdbc {
     // if the file does not yet exist, appends initial details at the start.
     static void member_report(String prov_name, String dos, String serv_name, String mem_id)
     {
+        Member m = new Member();
         // write to a file that may already exist, details of the service.
         // lookup the member with the associated member id for their personal details (name, address)
-        String[] member_info = fill_member_data(mem_id);
-        String member_name = member_info[0]; // alias for easy reading below
-        String file_name = member_name.replaceAll("\\s", "");
+        //String[] member_info = fill_member_data(mem_id);
+        if (!fill_member_data(mem_id, m))
+        {
+            System.out.println("error in filling member data. exiting member report for mem_id" + mem_id);
+            return;
+        }
+        //String member_name = member_info[0]; // alias for easy reading below
+
+
+        String file_name = m.name.replaceAll("\\s", "").concat("-"+mem_id);
         // member_info[1] == address, city, state, zip
         // check whether the member has an existing file (current directory)
         // if they don't then we need to append the member information at the start.
         // it is convenient to use the members name as their file name, as long as no two members have the exact same name.
         String service_details = serv_name + " was done with provider " + prov_name + " on date " + dos;
-        String initial_details = "Record of Service for " + member_name +
+        String initial_details = "Record of Service for " + m.name +
                                  "\nMember Number: " + mem_id +
-                                 "\nAddress: " + member_info[1] + '\n';
+                                 "\nAddress: " + m.combined_address() + '\n';
         // write to file the details of service and optionally the initial details
         write_to_file(file_name, service_details, initial_details);
     }
 
     // append the given argument information to the eft. if the eft does not yet exist, append the initial information.
-    public static void eft(String prov_name, String pro_id, String dos, fee provider_fee)
+    public static void append_eft(String prov_name, String pro_id, String dos, fee provider_fee)
     {
         String date = String.valueOf(LocalDate.now());
         String file_name = "EFT-"+date;
@@ -189,8 +260,10 @@ public class myjdbc {
 
 
     // function to read Weekly Services Record table one at a time to do the main accounting procedure, EFT, and summary report
-    static void read_weekly_services()
+    static void weekly_services()
     {
+        Provider p = new Provider();
+        //Member m = new Member();
         try
         {
             // create provider and member files for the services in the Weekly Service record.
@@ -209,8 +282,12 @@ public class myjdbc {
                 fee provider_fee = new fee();
                 String serv_name = fill_service_data(srv_code, provider_fee);
                 // get the provider information for this service
-                String[] provider_info = fill_provider_data(pro_id);
-                String prov_name = provider_info[0];
+                //String[] provider_info = fill_provider_data(pro_id);
+                if (!fill_provider_data(pro_id,p))
+                {
+                    System.out.println("error filling provider data.");
+                }
+                //String prov_name = provider_info[0];
                 //String provider_address = provider_info[1]; unused so far
                 /*
                 // simple output for debug
@@ -222,7 +299,7 @@ public class myjdbc {
 
                 // lookup the member with their member id for their personal details (name, address)
                 // then write to file about the service details
-                member_report(prov_name, dos, serv_name, mem_id);
+                member_report(p.name, dos, serv_name, mem_id);
 
                 // do the same for the provider, but with slightly different information (look at member report for inspiration)
                 {   // PROVIDER REPORT -- for the same service
@@ -238,7 +315,7 @@ public class myjdbc {
                 }
 
                 // EFT
-                eft(prov_name, pro_id, dos, provider_fee);
+                append_eft(p.name, p.provider_id, dos, provider_fee);
 
                 {   // SUMMARY REPORT
                     // lists providers and total fees
@@ -287,7 +364,7 @@ public class myjdbc {
 
 
 
-    /* try to validate a provider by querying the database with the providers id.
+    /* try to validate a provider by querying the database with the provider's id.
         return:
         provider validated = 0
         invalid provider id = 2
@@ -318,7 +395,7 @@ public class myjdbc {
         }
     }
 
-    /* try to validate a member by querying the database with the members id.
+    /* try to validate a member by querying the database with the member's id.
         return:
         success = 0
         suspended = 4
@@ -372,7 +449,7 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "user_2", "pass_2");
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "potato");
             stmt = conn.createStatement();
         }
         catch (Exception e) // there was a problem in the connection to database. (probably the driver)
@@ -401,7 +478,7 @@ public class myjdbc {
         insert_service_record(LocalDate.now(), provider_id, member_id, service_code, comments);
         */
 
-        read_weekly_services(); // do the main accounting procedure, EFT, and summary report
+        weekly_services(); // do the main accounting procedure, EFT, and summary report
 
         // close connection to database
         try
