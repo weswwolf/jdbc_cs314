@@ -223,6 +223,19 @@ public class myjdbc {
     }
 
     // append the given argument information to the eft. if the eft does not yet exist, append the initial information.
+    public static void append_eft(Service s)
+    {
+        String date = String.valueOf(LocalDate.now());
+        String file_name = "EFT-"+date;
+        String initial_details = "Start date: " + LocalDate.now().minusDays(7)+"\n"
+                + "End date: " + LocalDate.now() + '\n';
+        String service_details = "provider " + s.provider_name + " with provider id " + s.provider_id
+                + " has fee: " + s.fee + " for service on " + s.date_of_service;
+        write_to_file(file_name, service_details, initial_details);
+    }
+
+    /* DEPRECATED, see REFACTORED above
+    // append the given argument information to the eft. if the eft does not yet exist, append the initial information.
     public static void append_eft(String prov_name, String pro_id, String dos, float provider_fee)
     {
         String date = String.valueOf(LocalDate.now());
@@ -233,7 +246,7 @@ public class myjdbc {
                 + " has fee: " + provider_fee + " for service on " + dos;
         write_to_file(file_name, service_details, initial_details);
     }
-
+    */
 
     // function to read Weekly Services Record table one at a time to do the main accounting procedure, EFT, and summary report
     static void weekly_services()
@@ -285,8 +298,8 @@ public class myjdbc {
                 }
 
                 // EFT
-                append_eft(p.name, p.provider_id, String.valueOf(s.date_of_service), s.fee);
-
+                //append_eft(p.name, p.provider_id, String.valueOf(s.date_of_service), s.fee);
+                append_eft(s);
                 {   // SUMMARY REPORT
                     // lists providers and total fees
                 }

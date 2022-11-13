@@ -12,4 +12,15 @@ public class Service
     public String code;
     public String comments;
     public float fee;
+
+    // basic constructor
+    Service()
+    {
+        number = -1;
+        name = "no-name";
+        provider_id = "no-provider";
+        code = "no-code";
+        comments = "no-comments";
+        fee = 0.0f;
+    }
 }
