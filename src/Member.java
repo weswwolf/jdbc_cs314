@@ -13,6 +13,7 @@ public class Member extends Personal
         member_id = id_;
     }
 
+
     public boolean same_id(String mem_id)
     {
         // same id

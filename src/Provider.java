@@ -25,6 +25,7 @@ public class Provider extends Personal
         total_fee += s_.fee;
     }
 
+
     //returns a string with the name of the provider, total fees and consultations
     public String fee_and_consult() { return name + '\t' + consultations + '\t' + total_fee; }
 
