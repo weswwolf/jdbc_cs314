@@ -25,8 +25,14 @@ class myjdbcTest
     }
 
     @Test
-    void fill_service_data()
+    void fill_service_data_good()
     {
+        Service s = new Service();
+        String good_serv_code = "656565";
+        myjdbc.connect_to_database();
+        myjdbc.fill_service_data(good_serv_code, s);
+        assertEquals("Dynamic Chocoanalysis", s.name);
+        assertEquals(277.77f, s.fee, 0.1f);
     }
 
     @Test

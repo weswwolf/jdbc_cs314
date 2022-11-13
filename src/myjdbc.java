@@ -30,12 +30,6 @@ Preferences -- a way to store key value pairs persistently so that between proce
 
 */
 
-// the fee class is useful because we can't pass primitives by reference. We can pass objects by reference though.
-class fee
-{
-    float f;
-}
-
 public class myjdbc {
     private static Connection conn;
     private static Statement stmt;
@@ -87,7 +81,6 @@ public class myjdbc {
         // no matching member
         return false;
     }
-
     // return false if no matching provider found -- otherwise put the provider data into fill
     static Boolean fill_provider_data(String pro_id, Provider fill)
     {
@@ -115,6 +108,31 @@ public class myjdbc {
         return false;
     }
 
+    //refactored to take a Service object and fill the data into the Service object.
+    static Boolean fill_service_data(String serv_code, Service s)
+    {
+        try
+        {
+            Statement serv_stmt = conn.createStatement();
+            String query = "select * from `Service Directory` where service_code=" + serv_code;
+            ResultSet serv_search = serv_stmt.executeQuery(query);
+            if (serv_search.next())
+            {
+                s.name = serv_search.getString("service_name");
+                s.fee = serv_search.getFloat("service_fee"); // reference value is not changed
+                serv_stmt.close();
+                return true;
+            }
+            serv_stmt.close();
+        }
+        catch (Exception e)
+        {
+            //e.printStackTrace();
+        }
+        return false;
+    }
+
+    /* REFACTORED ABOVE, deprecated
     // use the service code to return the name as a string and fill the fee with the value from the service directory.
     // this could be refactored to return a Service object instead of a fee f and string name
     static String fill_service_data(String serv_code, fee f)
@@ -127,7 +145,7 @@ public class myjdbc {
             if (serv_search.next())
             {
                 String service_name = serv_search.getString("service_name");
-                f.f = serv_search.getInt("service_fee"); // reference value is not changed
+                f.f = serv_search.getInt("service_fee"); // reference value is changed
                 serv_stmt.close();
                 return service_name;
             }
@@ -139,6 +157,8 @@ public class myjdbc {
         }
         return "missing-service-name";
     }
+    */
+
 
     //  if the file does not exist, writes the initial details then the service details
     // if the file does exist, only writes the service details. this pattern is followed for the main accounting procedure.
@@ -203,14 +223,14 @@ public class myjdbc {
     }
 
     // append the given argument information to the eft. if the eft does not yet exist, append the initial information.
-    public static void append_eft(String prov_name, String pro_id, String dos, fee provider_fee)
+    public static void append_eft(String prov_name, String pro_id, String dos, float provider_fee)
     {
         String date = String.valueOf(LocalDate.now());
         String file_name = "EFT-"+date;
         String initial_details = "Start date: " + LocalDate.now().minusDays(7)+"\n"
                 + "End date: " + LocalDate.now() + '\n';
         String service_details = "provider " + prov_name + " with provider id " + pro_id
-                + " has fee: " + provider_fee.f + " for service on " + dos;
+                + " has fee: " + provider_fee + " for service on " + dos;
         write_to_file(file_name, service_details, initial_details);
     }
 
@@ -220,6 +240,7 @@ public class myjdbc {
     {
         Provider p = new Provider();
         //Member m = new Member();
+        Service s = new Service();
         try
         {
             // create provider and member files for the services in the Weekly Service record.
@@ -228,25 +249,27 @@ public class myjdbc {
             while (rs.next())
             {
                 // these variables are good for looking up info in other tables
-                //int service_number = rs.getInt("service_number"); // primary key for service
-                String srv_code = rs.getString("service_code");
-                String mem_id = rs.getString("member_id"); // primary key for member
-                String pro_id = rs.getString("provider_id"); // primary key for provider
                 // get the date of service, provider name, and service name in preparation for appending to file
-                String dos = rs.getString("service-date");
-                //we can do another query to the service directory to get the service name.
-                fee provider_fee = new fee();
-                String serv_name = fill_service_data(srv_code, provider_fee);
+                s.number = rs.getInt("service_number"); // primary key for service
+                //String srv_code = rs.getString("service_code");
+                s.code = rs.getString("service_code");
+                s.member_id = rs.getString("member_id"); // primary key for member
+                s.provider_id = rs.getString("provider_id"); // primary key for provider
+                s.date_of_service = rs.getDate("service-date").toLocalDate();
+                // fill out a service object using the service code.
+                if (!fill_service_data(s.code,s))
+                {
+                    System.out.println("error filling service data.");
+                }
                 // get the provider information for this service
-                if (!fill_provider_data(pro_id,p))
+                if (!fill_provider_data(s.provider_id,p))
                 {
                     System.out.println("error filling provider data.");
                 }
 
-
                 // lookup the member with their member id for their personal details (name, address)
                 // then write to file about the service details
-                member_report(p.name, dos, serv_name, mem_id);
+                member_report(p.name, String.valueOf(s.date_of_service), s.name, s.member_id);
 
                 // do the same for the provider, but with slightly different information (look at member report for inspiration)
                 {   // PROVIDER REPORT -- for the same service
@@ -262,7 +285,7 @@ public class myjdbc {
                 }
 
                 // EFT
-                append_eft(p.name, p.provider_id, dos, provider_fee);
+                append_eft(p.name, p.provider_id, String.valueOf(s.date_of_service), s.fee);
 
                 {   // SUMMARY REPORT
                     // lists providers and total fees
@@ -275,7 +298,6 @@ public class myjdbc {
         }
         // end weekly_function
     }
-
     
     // this should be refactored so that it takes only a service as argument
     // takes the information for one service as argument, and inserts it into the weekly service record.
@@ -308,8 +330,6 @@ public class myjdbc {
         }
         return 0; // success
     }
-
-
 
     /* try to validate a provider by querying the database with the provider's id.
         return:
@@ -400,6 +420,7 @@ public class myjdbc {
         return false;
     }
 
+
     // THIS SHOULD ONLY BE DONE ONCE AT THE START.
     public static void load_preferences()
     {
@@ -415,7 +436,7 @@ public class myjdbc {
 
     public static void main(String[] args)
     {
-        load_preferences();
+        load_preferences(); // service number for weekly services
         connect_to_database();
 
         // example input to database to validate a member or provider
@@ -429,7 +450,6 @@ public class myjdbc {
         {
             System.out.println("Access granted to member billing\n");
         }
-
         /* example information to input into service table
         String provider_id = "123456788";
         String member_id = "123456788";
@@ -437,9 +457,7 @@ public class myjdbc {
         String comments = "example comment";
         insert_service_record(LocalDate.now(), provider_id, member_id, service_code, comments);
         */
-
         weekly_services(); // do the main accounting procedure, EFT, and summary report
-
         // close connection to database
         try
         {
