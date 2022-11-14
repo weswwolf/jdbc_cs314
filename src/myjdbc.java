@@ -447,6 +447,33 @@ public class myjdbc {
         }
     }
 
+    public static int validate_service_code(String to_validate)
+    {
+        boolean exist;
+        try
+        {
+            rs = stmt.executeQuery("select * from `service directory` where service_code=" + to_validate);
+            exist = rs.next();
+        }
+        catch (Exception e)
+        {
+            //e.printStackTrace();
+            //database connection error
+            return 1;
+        }
+        if (exist)
+        {
+            //service code exists in db
+            return 0; // success
+        }
+        else
+        {
+            // terminal side output removed
+            // invalid service code
+            return 2;
+        }
+    }
+
     public static void main(String[] args)
     {
         load_preferences(); // service number for weekly services
