@@ -95,8 +95,8 @@ public class Terminal
         flag = input.next().charAt(0);
         if (flag == 'Y' || flag == 'y')
         {
+            input.nextLine();
             System.out.println("Enter any comments: ");
-            input.next();
             comments = input.nextLine();
             new_service.set_insert_service(prov_id, mem_id, LocalDate.parse(dos), comments, s_code);
         }
