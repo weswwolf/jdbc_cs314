@@ -31,6 +31,7 @@ public class Terminal
         return 0;
     }
 
+    //main terminal view
     public int menu_selection()
     {
         int selection = 0;
@@ -46,11 +47,13 @@ public class Terminal
         return selection;
     }
 
+    //this function checks if a provider id matches in the database
     public int verify_provider(String prov_id)
     {
         return myjdbc.validate_provider(prov_id);
     }
 
+    //function that handles the return code from validating a provider
     public void login_handle(int validation)
     {
         if (validation == 1)
@@ -66,11 +69,13 @@ public class Terminal
             System.out.println("Access Granted");
         }
     }
-    public void handle_selection(int selection, Member to_service)
+
+    //function that handles the selection option from the menu f
+    public void handle_selection(int selection, String prov_id, String mem_id)
     {
-        String mem_id = null;
         String dos = null;
         String s_code = null;
+        String comments = null;
         int returned = -1;
         switch(selection)
         {
@@ -84,8 +89,15 @@ public class Terminal
                 handle_member(myjdbc.validate_member(mem_id));
                 break;
             case 3:
+                returned = 1;
+                while (returned == 1)
+                {
+                    System.out.print("Member Id to Bill: ");
+                    input.nextLine();
+                    mem_id = input.nextLine();
+                    returned = handle_member(myjdbc.validate_member(mem_id));
+                }
                 System.out.print("Enter Date of Service (yyyy-mm-dd): ");
-                input.nextLine();
                 dos = input.nextLine();
                 try
                 {
@@ -98,12 +110,22 @@ public class Terminal
                 System.out.print("Enter Service Code: ");
                 s_code = input.nextLine();
                 returned = myjdbc.validate_service_code(s_code);
-                if (returned == 0)
-                    System.out.println("Service code accepted");
-                else if (returned == 1)
+
+                if (returned == 1)
                     System.out.println("Database Problem");
                 else if (returned == 2)
                     System.out.println("Service code not found");
+                else if (returned == 0)
+                {
+                    System.out.println("Service code accepted");
+                    System.out.println("Enter any comments:");
+                    comments = input.nextLine();
+                    returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, comments);
+                    if (returned == 1)
+                        System.out.println("There was a problem with billing the member, please try again");
+                    else if (returned == 0)
+                        System.out.println("Member Successfully Billed");
+                }
                 break;
             default:
                 break;
@@ -115,16 +137,22 @@ public class Terminal
 
     }
 
-    public void handle_member(int to_handle)
+    //function that handles the return code from verifying a member id
+    //return 0 if validated, else return 1
+    public int handle_member(int to_handle)
     {
         if (to_handle == 0)
+        {
             System.out.println("Member Validated");
+            return 0;
+        }
         else if (to_handle == 1)
             System.out.println("Problem Connecting to Database");
         else if (to_handle == 3)
             System.out.println("Invalid Member");
         else if (to_handle == 4)
             System.out.println("Member Suspended");
+        return 1;
     }
 
     static public void main(String[] args)
@@ -137,6 +165,7 @@ public class Terminal
         Member member_serviced = new Member();
         Provider logged_in = new Provider();
         String prov_id = null;
+        String mem_id = null;
 
         while (validation != 0)
         {
@@ -152,7 +181,7 @@ public class Terminal
         while (selection != 9)
         {
             selection = main_terminal.menu_selection();
-            main_terminal.handle_selection(selection, member_serviced);
+            main_terminal.handle_selection(selection, prov_id, mem_id);
         }
         System.out.println("\nGOODBYE");
 
