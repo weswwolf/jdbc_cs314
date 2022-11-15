@@ -100,7 +100,6 @@ public class Terminal
                 } while (returned != 0);
 
                 System.out.println("Service code accepted");
-                // TODO make comments optional
                 System.out.println("Enter any comments:");
                 input.next();
                 comments = input.nextLine();
