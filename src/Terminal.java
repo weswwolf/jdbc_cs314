@@ -58,6 +58,9 @@ public class Terminal
         char flag;
         String comments;
 
+        Service new_service = new Service();
+
+
         while (returned == 1)
         {
             System.out.println("Member Id to Bill: ");
@@ -97,13 +100,15 @@ public class Terminal
             System.out.println("Enter any comments: ");
             input.next();
             comments = input.nextLine();
-            // TODO use refactored function that takes a service instead of its members
-            returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, comments);
+
+            new_service.set_insert_service(prov_id, mem_id, LocalDate.parse(dos), comments, s_code);
         }
         else
         {
-            returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, " ");
+            new_service.set_insert_service(prov_id, mem_id, LocalDate.parse(dos), " ", s_code);
         }
+        returned = myjdbc.insert_service_record(new_service);
+
         if (returned == 1)
             System.out.println("There was a problem with billing the member, please try again");
         else if (returned == 0)

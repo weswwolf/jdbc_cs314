@@ -23,4 +23,15 @@ public class Service
         comments = "no-comments";
         fee = 0.0f;
     }
+
+    //does not set every member
+    public void set_insert_service(String prov_id, String mem_id, LocalDate dos, String com, String s_code)
+    {
+        provider_id = prov_id;
+        member_id = mem_id;
+        date_of_service = dos;
+        comments = com;
+        code = s_code;
+    }
+
 }
