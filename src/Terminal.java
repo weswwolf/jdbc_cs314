@@ -55,6 +55,7 @@ public class Terminal
         String dos;
         String s_code;
         String comments;
+        int flag;
         int returned;
         switch(selection)
         {
@@ -100,11 +101,20 @@ public class Terminal
                 } while (returned != 0);
 
                 System.out.println("Service code accepted");
-                System.out.println("Enter any comments:");
-                input.next();
-                comments = input.nextLine();
-                // TODO use refactored function that takes a service instead of its members
-                returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, comments);
+                System.out.println("Enter Comments? (1 - yes, 2 - No: ");
+                flag = input.nextInt();
+                if (flag != 2)
+                {
+                    System.out.println("Enter any comments:");
+                    input.next();
+                    comments = input.nextLine();
+                    // TODO use refactored function that takes a service instead of its members
+                    returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, comments);
+                }
+                else
+                {
+                    returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, " ");
+                }
                 if (returned == 1)
                     System.out.println("There was a problem with billing the member, please try again");
                 else if (returned == 0)
