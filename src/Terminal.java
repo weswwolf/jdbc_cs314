@@ -63,8 +63,7 @@ public class Terminal
                 break;
             case 2:
                 System.out.print("Member Id: ");
-                input.nextLine();
-                mem_id = input.nextLine();
+                mem_id = input.next();
                 handle_member(myjdbc.validate_member(mem_id));
                 break;
             case 3:
@@ -72,15 +71,14 @@ public class Terminal
                 while (returned == 1)
                 {
                     System.out.println("Member Id to Bill: ");
-                    input.nextLine();
-                    mem_id = input.nextLine();
+                    mem_id = input.next();
                     returned = handle_member(myjdbc.validate_member(mem_id));
                 }
                 do
                 {
                     returned = 0;
                     System.out.println("Enter Date of Service (yyyy-mm-dd): ");
-                    dos = input.nextLine();
+                    dos = input.next();
                     try
                     {
                         LocalDate localDate = LocalDate.parse(dos);
@@ -92,7 +90,7 @@ public class Terminal
                 do
                 {
                     System.out.print("Enter Service Code: ");
-                    s_code = input.nextLine();
+                    s_code = input.next();
                     returned = myjdbc.validate_service_code(s_code);
 
                     if (returned == 1)
@@ -103,6 +101,7 @@ public class Terminal
 
                 System.out.println("Service code accepted");
                 System.out.println("Enter any comments:");
+                input.next();
                 comments = input.nextLine();
                 returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, comments);
                 if (returned == 1)
@@ -146,7 +145,7 @@ public class Terminal
         while (validation != 0)
         {
             System.out.println("Enter Provider Id: ");
-            prov_id = input.nextLine();
+            prov_id = input.next();
             validation = main_terminal.verify_provider(prov_id);
             main_terminal.login_handle(validation);
             if (validation == 0)
