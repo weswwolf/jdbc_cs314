@@ -5,6 +5,7 @@ public class Terminal
 {
     protected static Scanner input = new Scanner(System.in);
 
+    /* commented until we need to use it to stop the warning flood
     public int view_service_directory()
     {
         return 0;
@@ -29,6 +30,7 @@ public class Terminal
     {
         return 0;
     }
+     */
 
     public int menu_selection()
     {
@@ -109,10 +111,12 @@ public class Terminal
         }
     }
 
+    /*
     public void bill_member(Member to_bill, Provider billing)
     {
 
     }
+     */
 
     public void handle_member(int to_handle)
     {
