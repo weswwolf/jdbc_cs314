@@ -100,9 +100,11 @@ public class Terminal
                 } while (returned != 0);
 
                 System.out.println("Service code accepted");
+                // TODO make comments optional
                 System.out.println("Enter any comments:");
                 input.next();
                 comments = input.nextLine();
+                // TODO use refactored function that takes a service instead of its members
                 returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, comments);
                 if (returned == 1)
                     System.out.println("There was a problem with billing the member, please try again");

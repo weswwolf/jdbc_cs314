@@ -328,6 +328,30 @@ public class myjdbc {
         }
         return -1;
     }
+
+    // refactored function to insert a service
+    public static int insert_service_record(Service s)
+    {
+        try
+        {
+
+            // this is the query to insert a service record into the database
+            String query = "INSERT INTO `ChocAn`.`Weekly Service Record` (`service_number`, `current-date-time`, `service-date`, `provider_id`, `member_id`, `service_code`, `comments`)  " +
+                    //"VALUES ('" +String.valueOf(service_number)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
+                    //"VALUES ('" + userPreferences.getInt("service_number", 0)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
+                    "VALUES ('" + get_next_service_number()+"', '"+ LocalDateTime.now()+"', '"+s.date_of_service+"', '"+s.provider_id+"', '"+s.member_id+"', '"+s.code+"', '" +s.comments +"');";
+            // instead of doing a query, we are doing an update because we are updating a value in the database.
+            //rs = stmt.executeQuery(query);
+            stmt.executeUpdate(query);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return 1; // problem with query
+        }
+        return 0; // success
+    }
+
     
     // this should be refactored so that it takes only a service as argument
     // takes the information for one service as argument, and inserts it into the weekly service record.
@@ -434,7 +458,7 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "cs314");
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "potato");
             stmt = conn.createStatement();
             return true;
         }
@@ -493,7 +517,7 @@ public class myjdbc {
         String service_code = "656565";
         String comments = "example comment";
         */
-        insert_service_record(LocalDate.now(), "112233445", "123456789", "101010", "mission complete");
+        //insert_service_record(LocalDate.now(), "112233445", "123456789", "101010", "mission complete");
 
 
 
