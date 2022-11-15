@@ -100,7 +100,6 @@ public class Terminal
             input.nextLine();
             System.out.println("Enter any comments: ");
             comments = input.nextLine();
-
             new_service.set_insert_service(prov_id, mem_id, LocalDate.parse(dos), comments, s_code);
         }
         else
