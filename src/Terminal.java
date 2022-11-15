@@ -10,30 +10,10 @@ public class Terminal
         return 0;
     }
 
-    public int bill_member(String mem_id, String service_code)
-    {
-        return 0;
-    }
-
-    public int generate_weekly_report()
-    {
-        return 0;
-    }
-
-    public int generate_individual_provider_report(String prov_id)
-    {
-        return 0;
-    }
-
-    public int generate_individual_member_report(String mem_id)
-    {
-        return 0;
-    }
-
     //main user interface of the terminal
     public int menu_selection()
     {
-        int selection = 0;
+        int selection;
         System.out.print("Terminal Menu\n\n");
         System.out.println("1 - View Service Directory");
         System.out.println("2 - Validate a Member");
@@ -75,7 +55,7 @@ public class Terminal
         String dos;
         String s_code;
         String comments;
-        int returned = -1;
+        int returned;
         switch(selection)
         {
             case 1:
@@ -120,17 +100,15 @@ public class Terminal
                     else if (returned == 2)
                         System.out.println("Service code not found");
                 } while (returned != 0);
-                if (returned == 0)
-                {
-                    System.out.println("Service code accepted");
-                    System.out.println("Enter any comments:");
-                    comments = input.nextLine();
-                    returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, comments);
-                    if (returned == 1)
-                        System.out.println("There was a problem with billing the member, please try again");
-                    else if (returned == 0)
-                        System.out.println("Member Successfully Billed");
-                }
+
+                System.out.println("Service code accepted");
+                System.out.println("Enter any comments:");
+                comments = input.nextLine();
+                returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, comments);
+                if (returned == 1)
+                    System.out.println("There was a problem with billing the member, please try again");
+                else if (returned == 0)
+                    System.out.println("Member Successfully Billed");
                 break;
             default:
                 break;
@@ -161,7 +139,6 @@ public class Terminal
         Terminal main_terminal = new Terminal();
         int validation = -1;
         int selection = 0;
-        //Member member_serviced = new Member();
         Provider logged_in = new Provider();
         String prov_id = null;
         String mem_id = null;
