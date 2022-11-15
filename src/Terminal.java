@@ -49,14 +49,70 @@ public class Terminal
         }
     }
 
+    //function to bill a memeber
+    public void bill_a_member(String prov_id, String mem_id)
+    {
+        int returned = 1;
+        String dos;
+        String s_code;
+        char flag;
+        String comments;
+
+        while (returned == 1)
+        {
+            System.out.println("Member Id to Bill: ");
+            mem_id = input.next();
+            returned = handle_member(myjdbc.validate_member(mem_id));
+        }
+        do
+        {
+            returned = 0;
+            System.out.println("Enter Date of Service (yyyy-mm-dd): ");
+            dos = input.next();
+            try
+            {
+                LocalDate localDate = LocalDate.parse(dos);
+            } catch (Exception E) {
+                System.out.println("Invalid Date/Format (yyyy-mm-dd)");
+                returned = 1;
+            }
+        } while (returned != 0);
+        do
+        {
+            System.out.print("Enter Service Code: ");
+            s_code = input.next();
+            returned = myjdbc.validate_service_code(s_code);
+
+            if (returned == 1)
+                System.out.println("Database Problem");
+            else if (returned == 2)
+                System.out.println("Service code not found");
+        } while (returned != 0);
+
+        System.out.println("Service code accepted");
+        System.out.println("Enter Comments? (Y or N): ");
+        flag = input.next().charAt(0);
+        if (flag == 'Y' || flag == 'y')
+        {
+            System.out.println("Enter any comments: ");
+            input.next();
+            comments = input.nextLine();
+            // TODO use refactored function that takes a service instead of its members
+            returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, comments);
+        }
+        else
+        {
+            returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, " ");
+        }
+        if (returned == 1)
+            System.out.println("There was a problem with billing the member, please try again");
+        else if (returned == 0)
+            System.out.println("Member Successfully Billed");
+    }
+
     //function that handles the user selection from the menu_selection
     public void handle_selection(int selection, String prov_id, String mem_id)
     {
-        String dos;
-        String s_code;
-        String comments;
-        int flag;
-        int returned;
         switch(selection)
         {
             case 1:
@@ -68,57 +124,7 @@ public class Terminal
                 handle_member(myjdbc.validate_member(mem_id));
                 break;
             case 3:
-                returned = 1;
-                while (returned == 1)
-                {
-                    System.out.println("Member Id to Bill: ");
-                    mem_id = input.next();
-                    returned = handle_member(myjdbc.validate_member(mem_id));
-                }
-                do
-                {
-                    returned = 0;
-                    System.out.println("Enter Date of Service (yyyy-mm-dd): ");
-                    dos = input.next();
-                    try
-                    {
-                        LocalDate localDate = LocalDate.parse(dos);
-                    } catch (Exception E) {
-                        System.out.println("Invalid Date/Format (yyyy-mm-dd)");
-                        returned = 1;
-                    }
-                } while (returned != 0);
-                do
-                {
-                    System.out.print("Enter Service Code: ");
-                    s_code = input.next();
-                    returned = myjdbc.validate_service_code(s_code);
-
-                    if (returned == 1)
-                        System.out.println("Database Problem");
-                    else if (returned == 2)
-                        System.out.println("Service code not found");
-                } while (returned != 0);
-
-                System.out.println("Service code accepted");
-                System.out.println("Enter Comments? (1 - yes, 2 - No: ");
-                flag = input.nextInt();
-                if (flag != 2)
-                {
-                    System.out.println("Enter any comments:");
-                    input.next();
-                    comments = input.nextLine();
-                    // TODO use refactored function that takes a service instead of its members
-                    returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, comments);
-                }
-                else
-                {
-                    returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, " ");
-                }
-                if (returned == 1)
-                    System.out.println("There was a problem with billing the member, please try again");
-                else if (returned == 0)
-                    System.out.println("Member Successfully Billed");
+                bill_a_member(prov_id, mem_id);
                 break;
             default:
                 break;
