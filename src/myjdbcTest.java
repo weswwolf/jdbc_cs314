@@ -1,5 +1,7 @@
 import org.junit.jupiter.api.Test;
 import java.io.File;
+import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -66,6 +68,9 @@ class myjdbcTest
     @Test
     void append_eft()
     {
+        // destroy the eft file
+        // append the eft with a single service
+        // verify the actual file contents match the expected contents.
     }
 
     // this function is not finished, yet
@@ -78,6 +83,38 @@ class myjdbcTest
     @Test
     void insert_service_record_good()
     {
+        myjdbc.connect_to_database();
+        // check the number of services in the weekly service table
+        int current_service_number = myjdbc.get_next_service_number();
+        // insert a service record s
+        // check the number of services in the table increased by one.
+        Service s = new Service();
+        // TODO refactor into function
+        s.date_of_service = LocalDate.now();
+        s.provider_id = "112233445";
+        s.member_id = "123456789";
+        s.comments = "example test comment";
+        s.code = "101010";
+        myjdbc.insert_service_record(s);
+        assertEquals(current_service_number, myjdbc.get_next_service_number()-1);
+    }
+
+    @Test
+    void insert_service_record_invalid_code()
+    {
+        myjdbc.connect_to_database();
+        // check the number of services in the weekly service table
+        int current_service_number = myjdbc.get_next_service_number();
+        Service s = new Service();
+        // TODO refactor into function
+        s.date_of_service = LocalDate.now();
+        s.provider_id = "112233445";
+        s.member_id = "123456789";
+        s.comments = "example test comment";
+        s.code = "1";
+        myjdbc.insert_service_record(s);
+        // assert that a new entry has been made to the weekly service table
+        assertEquals(current_service_number, myjdbc.get_next_service_number()-1);
     }
 
     // VALIDATE PROVIDER

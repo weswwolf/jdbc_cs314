@@ -81,7 +81,8 @@ public class Terminal
                     dos = input.next();
                     try
                     {
-                        LocalDate localDate = LocalDate.parse(dos);
+                        //LocalDate localDate = LocalDate.parse(dos);
+                        LocalDate.parse(dos);
                     } catch (Exception E) {
                         System.out.println("Invalid Date/Format (yyyy-mm-dd)");
                         returned = 1;
@@ -100,9 +101,11 @@ public class Terminal
                 } while (returned != 0);
 
                 System.out.println("Service code accepted");
+                // TODO make this optional
                 System.out.println("Enter any comments:");
                 input.next();
                 comments = input.nextLine();
+                // TODO use refactored function that takes a service instead of its members
                 returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, comments);
                 if (returned == 1)
                     System.out.println("There was a problem with billing the member, please try again");
@@ -133,7 +136,6 @@ public class Terminal
 
     static public void main(String[] args)
     {
-        //myjdbc.load_preferences();
         myjdbc.connect_to_database();
         Terminal main_terminal = new Terminal();
         int validation = -1;

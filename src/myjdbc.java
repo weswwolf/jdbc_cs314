@@ -334,7 +334,7 @@ public class myjdbc {
     // returns:
     //  success = 0
     //  database issue = 1
-    public static int insert_service_record(LocalDate service_date, String provider_id, String member_id, String service_code, String comments)
+    public static int insert_service_record(Service s)
     {
         try
         {
@@ -343,7 +343,7 @@ public class myjdbc {
             String query = "INSERT INTO `ChocAn`.`Weekly Service Record` (`service_number`, `current-date-time`, `service-date`, `provider_id`, `member_id`, `service_code`, `comments`)  " +
                     //"VALUES ('" +String.valueOf(service_number)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
                     //"VALUES ('" + userPreferences.getInt("service_number", 0)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
-                    "VALUES ('" + get_next_service_number()+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
+                    "VALUES ('" + get_next_service_number()+"', '"+ LocalDateTime.now()+"', '"+s.date_of_service+"', '"+s.provider_id+"', '"+s.member_id+"', '"+s.code+"', '" +s.comments +"');";
                     // instead of doing a query, we are doing an update because we are updating a value in the database.
             //rs = stmt.executeQuery(query);
             stmt.executeUpdate(query);
@@ -355,6 +355,29 @@ public class myjdbc {
         }
         return 0; // success
     }
+
+    public static int insert_service_record(LocalDate service_date, String provider_id, String member_id, String service_code, String comments)
+    {
+        try
+        {
+
+            // this is the query to insert a service record into the database
+            String query = "INSERT INTO `ChocAn`.`Weekly Service Record` (`service_number`, `current-date-time`, `service-date`, `provider_id`, `member_id`, `service_code`, `comments`)  " +
+                    //"VALUES ('" +String.valueOf(service_number)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
+                    //"VALUES ('" + userPreferences.getInt("service_number", 0)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
+                    "VALUES ('" + get_next_service_number()+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
+            // instead of doing a query, we are doing an update because we are updating a value in the database.
+            //rs = stmt.executeQuery(query);
+            stmt.executeUpdate(query);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return 1; // problem with query
+        }
+        return 0; // success
+    }
+
 
     /* try to validate a provider by querying the database with the provider's id.
         return:
@@ -434,7 +457,7 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "cs314");
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "potato");
             stmt = conn.createStatement();
             return true;
         }
@@ -475,7 +498,6 @@ public class myjdbc {
     public static void main(String[] args)
     {
         connect_to_database();
-
         // example input to database to validate a member or provider
         String p_id = "123456789";
         String m_id = "112233";
@@ -493,10 +515,16 @@ public class myjdbc {
         String service_code = "656565";
         String comments = "example comment";
         */
+        /*
+        Service s = new Service();
+        s.date_of_service = LocalDate.now();
+        s.provider_id = "112233445";
+        s.member_id = "123456789";
+        s.comments = "example test comment";
+        s.code = "101010";
         insert_service_record(LocalDate.now(), "112233445", "123456789", "101010", "mission complete");
-
-
-
+        insert_service_record(s);
+         */
         weekly_services(); // do the main accounting procedure, EFT, and summary report
         // close connection to database
         try
