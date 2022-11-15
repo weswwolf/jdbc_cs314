@@ -1,11 +1,11 @@
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class Terminal
 {
     protected static Scanner input = new Scanner(System.in);
 
+    /* commented until we need to use it to stop the warning flood
     public int view_service_directory()
     {
         return 0;
@@ -30,10 +30,11 @@ public class Terminal
     {
         return 0;
     }
+     */
 
     public int menu_selection()
     {
-        int selection = 0;
+        int selection;
         System.out.print("Terminal Menu\n\n");
         System.out.println("1 - View Service Directory");
         System.out.println("2 - Validate a Member");
@@ -68,10 +69,10 @@ public class Terminal
     }
     public void handle_selection(int selection, Member to_service)
     {
-        String mem_id = null;
-        String dos = null;
-        String s_code = null;
-        int returned = -1;
+        String mem_id;
+        String dos;
+        String s_code;
+        int returned;
         switch(selection)
         {
             case 1:
@@ -110,10 +111,12 @@ public class Terminal
         }
     }
 
+    /*
     public void bill_member(Member to_bill, Provider billing)
     {
 
     }
+     */
 
     public void handle_member(int to_handle)
     {
@@ -129,14 +132,13 @@ public class Terminal
 
     static public void main(String[] args)
     {
-        myjdbc.load_preferences();
         myjdbc.connect_to_database();
         Terminal main_terminal = new Terminal();
         int validation = -1;
         int selection = 0;
         Member member_serviced = new Member();
         Provider logged_in = new Provider();
-        String prov_id = null;
+        String prov_id;
 
         while (validation != 0)
         {
