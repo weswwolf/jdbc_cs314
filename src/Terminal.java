@@ -1,5 +1,4 @@
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class Terminal
@@ -31,6 +30,7 @@ public class Terminal
         return 0;
     }
 
+    //main user interface of the terminal
     public int menu_selection()
     {
         int selection = 0;
@@ -46,11 +46,13 @@ public class Terminal
         return selection;
     }
 
+    //validates that a provider id is in the database
     public int verify_provider(String prov_id)
     {
         return myjdbc.validate_provider(prov_id);
     }
 
+    //function that handles the return value from validating a provider
     public void login_handle(int validation)
     {
         if (validation == 1)
@@ -66,11 +68,13 @@ public class Terminal
             System.out.println("Access Granted");
         }
     }
-    public void handle_selection(int selection, Member to_service)
+
+    //function that handles the user selection from the menu_selection
+    public void handle_selection(int selection, String prov_id, String mem_id)
     {
-        String mem_id = null;
-        String dos = null;
-        String s_code = null;
+        String dos;
+        String s_code;
+        String comments;
         int returned = -1;
         switch(selection)
         {
@@ -84,63 +88,87 @@ public class Terminal
                 handle_member(myjdbc.validate_member(mem_id));
                 break;
             case 3:
-                System.out.print("Enter Date of Service (yyyy-mm-dd): ");
-                input.nextLine();
-                dos = input.nextLine();
-                try
+                returned = 1;
+                while (returned == 1)
                 {
-                    LocalDate localDate = LocalDate.parse(dos);
+                    System.out.println("Member Id to Bill: ");
+                    input.nextLine();
+                    mem_id = input.nextLine();
+                    returned = handle_member(myjdbc.validate_member(mem_id));
                 }
-                catch (Exception E)
+                do
                 {
-                    System.out.println("Invalid Date/Format (yyyy-mm-dd)");
-                }
-                System.out.print("Enter Service Code: ");
-                s_code = input.nextLine();
-                returned = myjdbc.validate_service_code(s_code);
+                    returned = 0;
+                    System.out.println("Enter Date of Service (yyyy-mm-dd): ");
+                    dos = input.nextLine();
+                    try
+                    {
+                        LocalDate localDate = LocalDate.parse(dos);
+                    } catch (Exception E) {
+                        System.out.println("Invalid Date/Format (yyyy-mm-dd)");
+                        returned = 1;
+                    }
+                } while (returned != 0);
+                do
+                {
+                    System.out.print("Enter Service Code: ");
+                    s_code = input.nextLine();
+                    returned = myjdbc.validate_service_code(s_code);
+
+                    if (returned == 1)
+                        System.out.println("Database Problem");
+                    else if (returned == 2)
+                        System.out.println("Service code not found");
+                } while (returned != 0);
                 if (returned == 0)
+                {
                     System.out.println("Service code accepted");
-                else if (returned == 1)
-                    System.out.println("Database Problem");
-                else if (returned == 2)
-                    System.out.println("Service code not found");
+                    System.out.println("Enter any comments:");
+                    comments = input.nextLine();
+                    returned = myjdbc.insert_service_record(LocalDate.parse(dos), prov_id, mem_id, s_code, comments);
+                    if (returned == 1)
+                        System.out.println("There was a problem with billing the member, please try again");
+                    else if (returned == 0)
+                        System.out.println("Member Successfully Billed");
+                }
                 break;
             default:
                 break;
         }
     }
 
-    public void bill_member(Member to_bill, Provider billing)
-    {
-
-    }
-
-    public void handle_member(int to_handle)
+    //this function handles the return value that is returned when validating a member id
+    public int handle_member(int to_handle)
     {
         if (to_handle == 0)
+        {
             System.out.println("Member Validated");
+            return 0;
+        }
         else if (to_handle == 1)
             System.out.println("Problem Connecting to Database");
         else if (to_handle == 3)
             System.out.println("Invalid Member");
         else if (to_handle == 4)
             System.out.println("Member Suspended");
+        return 1;
     }
 
     static public void main(String[] args)
     {
-        myjdbc.load_preferences();
+        //myjdbc.load_preferences();
         myjdbc.connect_to_database();
         Terminal main_terminal = new Terminal();
         int validation = -1;
         int selection = 0;
-        Member member_serviced = new Member();
+        //Member member_serviced = new Member();
         Provider logged_in = new Provider();
         String prov_id = null;
+        String mem_id = null;
 
         while (validation != 0)
         {
-            System.out.print("Enter Provider Id: ");
+            System.out.println("Enter Provider Id: ");
             prov_id = input.nextLine();
             validation = main_terminal.verify_provider(prov_id);
             main_terminal.login_handle(validation);
@@ -152,7 +180,7 @@ public class Terminal
         while (selection != 9)
         {
             selection = main_terminal.menu_selection();
-            main_terminal.handle_selection(selection, member_serviced);
+            main_terminal.handle_selection(selection, prov_id, mem_id);
         }
         System.out.println("\nGOODBYE");
 
