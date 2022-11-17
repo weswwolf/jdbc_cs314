@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 
 /*
@@ -493,6 +494,58 @@ public class myjdbc {
             // terminal side output removed
             // invalid service code
             return 2;
+        }
+    }
+
+    //function that gets the service directory from the database and returns it
+    public static ArrayList<Service> get_service_directory()
+    {
+        ArrayList<Service> directory = new ArrayList<Service>();
+        try
+        {
+            rs = stmt.executeQuery("select * from `Service Directory`");
+            while (rs.next())
+            {
+                Service new_service = new Service();
+                //service_code, service_name, service_desc, service_fee
+                new_service.code = rs.getString("service_code");
+                new_service.name = rs.getString("service_name");
+                new_service.description = rs.getString("service_desc");
+                new_service.fee = rs.getFloat("service_fee");
+
+                directory.add(new_service);
+            }
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+        return directory;
+    }
+
+    public static void generate_individual_report(String mem_id)
+    {
+        Service s = new Service();
+        Member n = new Member();
+        myjdbc.fill_member_data(mem_id, n);
+        String file_name = n.name.replaceAll("\\s", "").concat("-" + mem_id);
+        File_Manage.delete_file(file_name);
+        try
+        {
+            rs = stmt.executeQuery("select * from `Weekly Service Record` where member_id=" + mem_id);
+            while (rs.next())
+            {
+                s.member_id = mem_id;
+                s.provider_name = "Steve";
+                s.date_of_service = rs.getDate("service-date").toLocalDate();
+                s.code = rs.getString("service_code");
+                fill_service_data(s.code, s);
+                member_report(s.provider_name, s.date_of_service.toString(), s.name, s.member_id);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
         }
     }
 

@@ -2,16 +2,20 @@ import java.time.LocalDate;
 
 public class Service
 {
-    public int number;
+    //generic data member for all service objects
     public String name;
-    public LocalDate current_date;
-    public LocalDate date_of_service;
+    public String description;
+    public String code;
+    public float fee;
+
+    //specific data members for a record of service
     public String provider_name;
     public String provider_id;
     public String member_id;
-    public String code;
+    public LocalDate date_of_service;
+    public LocalDate current_date;
     public String comments;
-    public float fee;
+    public int number;
 
     // basic constructor
     Service()
@@ -22,6 +26,12 @@ public class Service
         code = "no-code";
         comments = "no-comments";
         fee = 0.0f;
+    }
+
+    public void print_service()
+    {
+        System.out.printf("%-10s %-29s %-8.2f %s", code, name, fee, description);
+        System.out.println();
     }
 
     //does not set every member

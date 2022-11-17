@@ -1,14 +1,31 @@
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Terminal
 {
-    protected static Scanner input = new Scanner(System.in);
+    private static Scanner input = new Scanner(System.in);
+    private static ArrayList<Service> directory = new ArrayList<Service>();
 
+    //populates the service directory
+    public boolean get_service_directory()
+    {
+        directory = myjdbc.get_service_directory();
+        if (directory == null)
+            return false;
+        return true;
+    }
+
+    //displays the service directory
     public int view_service_directory()
     {
+        for (int i = 0; i < directory.size(); ++i)
+        {
+            directory.get(i).print_service();
+        }
         return 0;
     }
+
 
     //main user interface of the terminal
     public int menu_selection()
@@ -18,6 +35,9 @@ public class Terminal
         System.out.println("1 - View Service Directory");
         System.out.println("2 - Validate a Member");
         System.out.println("3 - Bill a Member");
+        System.out.println("4 - Individual Member Report");
+        System.out.println("5 - Individual Provider Report");
+        System.out.println("6 - Run Weekly Report");
 
         System.out.println("9 - LOGOUT");
 
@@ -117,13 +137,14 @@ public class Terminal
             System.out.println("Member Successfully Billed");
     }
 
+    //TODO should handle cases 5 and 6, need to add
     //function that handles the user selection from the menu_selection
     public void handle_menu_selection(int selection, String prov_id, String mem_id)
     {
         switch(selection)
         {
             case 1:
-                System.out.println("Does not exist!");
+                int returned = view_service_directory();
                 break;
             case 2:
                 System.out.print("Member Id: ");
@@ -133,6 +154,8 @@ public class Terminal
             case 3:
                 bill_a_member(prov_id, mem_id);
                 break;
+            case 4:
+                individual_member_report();
             default:
                 break;
         }
@@ -160,11 +183,32 @@ public class Terminal
         return 1;
     }
 
+    //creates a report of services rendered for an individual member
+    public boolean individual_member_report()
+    {
+        String mem_id;
+        int returned = -1;
+        do
+        {
+            System.out.println("Member Id: ");
+            mem_id = input.next();
+            returned = handle_member(myjdbc.validate_member(mem_id));
+            //if member is suspended, return to main menu
+            if (returned == 2)
+                return false;
+        } while (returned == 1);
+        myjdbc.generate_individual_report(mem_id);
+        System.out.print("report created\n");
+        return true;
+    }
+
+
     static public void main(String[] args)
     {
-        //myjdbc.load_preferences();
         myjdbc.connect_to_database();
         Terminal main_terminal = new Terminal();
+        //loads the service directory from database to terminal
+        directory = myjdbc.get_service_directory();
         int validation = -1;
         int selection = 0;
         Provider logged_in = new Provider();
