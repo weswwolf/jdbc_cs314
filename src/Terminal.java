@@ -7,7 +7,6 @@ public class Terminal
     private static Scanner input = new Scanner(System.in);
     private static ArrayList<Service> directory = new ArrayList<Service>();
 
-
     //populates the service directory
     public boolean get_service_directory()
     {
@@ -138,6 +137,7 @@ public class Terminal
             System.out.println("Member Successfully Billed");
     }
 
+    //TODO should handle cases 5 and 6, need to add
     //function that handles the user selection from the menu_selection
     public void handle_menu_selection(int selection, String prov_id, String mem_id)
     {
@@ -154,6 +154,8 @@ public class Terminal
             case 3:
                 bill_a_member(prov_id, mem_id);
                 break;
+            case 4:
+                individual_member_report();
             default:
                 break;
         }
@@ -179,6 +181,25 @@ public class Terminal
             System.out.println("Invalid Member");
 
         return 1;
+    }
+
+    //creates a report of services rendered for an individual member
+    public boolean individual_member_report()
+    {
+        String mem_id;
+        int returned = -1;
+        do
+        {
+            System.out.println("Member Id: ");
+            mem_id = input.next();
+            returned = handle_member(myjdbc.validate_member(mem_id));
+            //if member is suspended, return to main menu
+            if (returned == 2)
+                return false;
+        } while (returned == 1);
+        myjdbc.generate_individual_report(mem_id);
+        System.out.print("report created\n");
+        return true;
     }
 
 

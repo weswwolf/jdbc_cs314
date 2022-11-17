@@ -523,6 +523,32 @@ public class myjdbc {
         return directory;
     }
 
+    public static void generate_individual_report(String mem_id)
+    {
+        Service s = new Service();
+        Member n = new Member();
+        myjdbc.fill_member_data(mem_id, n);
+        String file_name = n.name.replaceAll("\\s", "").concat("-" + mem_id);
+        File_Manage.delete_file(file_name);
+        try
+        {
+            rs = stmt.executeQuery("select * from `Weekly Service Record` where member_id=" + mem_id);
+            while (rs.next())
+            {
+                s.member_id = mem_id;
+                s.provider_name = "Steve";
+                s.date_of_service = rs.getDate("service-date").toLocalDate();
+                s.code = rs.getString("service_code");
+                fill_service_data(s.code, s);
+                member_report(s.provider_name, s.date_of_service.toString(), s.name, s.member_id);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args)
     {
         connect_to_database();
