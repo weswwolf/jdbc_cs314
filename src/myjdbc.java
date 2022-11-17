@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 
 /*
@@ -494,6 +495,32 @@ public class myjdbc {
             // invalid service code
             return 2;
         }
+    }
+
+    //function that gets the service directory from the database and returns it
+    public static ArrayList<Service> get_service_directory()
+    {
+        ArrayList<Service> directory = new ArrayList<Service>();
+        try
+        {
+            rs = stmt.executeQuery("select * from `Service Directory`");
+            while (rs.next())
+            {
+                Service new_service = new Service();
+                //service_code, service_name, service_desc, service_fee
+                new_service.code = rs.getString("service_code");
+                new_service.name = rs.getString("service_name");
+                new_service.description = rs.getString("service_desc");
+                new_service.fee = rs.getFloat("service_fee");
+
+                directory.add(new_service);
+            }
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+        return directory;
     }
 
     public static void main(String[] args)
