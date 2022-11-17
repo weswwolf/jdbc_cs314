@@ -49,7 +49,7 @@ public class Terminal
         }
     }
 
-    //function to bill a memeber
+    //function to bill a member
     public void bill_a_member(String prov_id, String mem_id)
     {
         int returned = 1;
@@ -66,6 +66,9 @@ public class Terminal
             System.out.println("Member Id to Bill: ");
             mem_id = input.next();
             returned = handle_member(myjdbc.validate_member(mem_id));
+            //if member is suspended, return to main menu
+            if (returned == 2)
+                return;
         }
         do
         {
@@ -115,7 +118,7 @@ public class Terminal
     }
 
     //function that handles the user selection from the menu_selection
-    public void handle_selection(int selection, String prov_id, String mem_id)
+    public void handle_menu_selection(int selection, String prov_id, String mem_id)
     {
         switch(selection)
         {
@@ -135,7 +138,8 @@ public class Terminal
         }
     }
 
-    //this function handles the return value that is returned when validating a member id
+    //this function handles the return value that is returned when validating a member id. Return 0 if member valid,
+    //2 in member suspended, 1 for all other reasons
     public int handle_member(int to_handle)
     {
         if (to_handle == 0)
@@ -143,12 +147,16 @@ public class Terminal
             System.out.println("Member Validated");
             return 0;
         }
+        else if (to_handle == 4)
+        {
+            System.out.println("Member Suspended");
+            return 2;
+        }
         else if (to_handle == 1)
             System.out.println("Problem Connecting to Database");
         else if (to_handle == 3)
             System.out.println("Invalid Member");
-        else if (to_handle == 4)
-            System.out.println("Member Suspended");
+
         return 1;
     }
 
@@ -177,7 +185,7 @@ public class Terminal
         while (selection != 9)
         {
             selection = main_terminal.menu_selection();
-            main_terminal.handle_selection(selection, prov_id, mem_id);
+            main_terminal.handle_menu_selection(selection, prov_id, mem_id);
         }
         System.out.println("\nGOODBYE");
 
