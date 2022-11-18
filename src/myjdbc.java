@@ -14,19 +14,24 @@ ResultSet -- a table of data representing a database result set usually generate
 */
 
 /*
-    current functions
-    -----------------------
-    -- can look up whether a provider exists with try_provider_id(p_id)
-    -- can look up whether a member exists AND is not suspended with try_member_id(m_id);
-    -- can insert a new table entry into the services table with arguments for the data.
-    -- can read from the weekly table of services
-    -----------------------
-    future functions
-    -----------------------
-    -- make provider files
-    -- do summary report
-    -----------------------
-
+  // CONNECTIONS
+    boolean connect_to_database()
+    void end_connection()
+    // GETTING DATA
+    Boolean fill_member_data(String mem_id, Member m)
+    Boolean fill_provider_data(String pro_id, Provider fill)
+    Boolean fill_service_data(String serv_code, Service s)
+    // VALIDATE
+    int validate_provider(String p_id)
+    int validate_member(String m_id)
+    int validate_service_code(String to_validate)
+    // UTILITY
+    int insert_service_record(Service s)
+    int get_next_service_number()
+    ArrayList<Service> get_service_directory()
+    void generate_individual_report(String mem_id)
+    void append_eft(Service s)
+    void weekly_services()
 */
 
 public class myjdbc {
@@ -461,7 +466,7 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "ReijiPri2");
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "pass");
             stmt = conn.createStatement();
             return true;
         }
