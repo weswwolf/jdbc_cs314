@@ -4,24 +4,26 @@ import java.util.Scanner;
 
 public class Terminal
 {
-    private static Scanner input = new Scanner(System.in);
-    private static ArrayList<Service> directory = new ArrayList<Service>();
+    private static Scanner input;
+    private static ArrayList<Service> directory;
 
     //populates the service directory
     public boolean get_service_directory()
     {
         directory = myjdbc.get_service_directory();
-        if (directory == null)
-            return false;
-        return true;
+        return directory != null;
+    }
+
+    public Terminal(){
+        input = new Scanner(System.in);
+        directory = new ArrayList<>();
     }
 
     //displays the service directory
     public int view_service_directory()
     {
-        for (int i = 0; i < directory.size(); ++i)
-        {
-            directory.get(i).print_service();
+        for (Service service : directory) {
+            service.print_service();
         }
         return 0;
     }
@@ -144,7 +146,6 @@ public class Terminal
         switch(selection)
         {
             case 1:
-                int returned = view_service_directory();
                 break;
             case 2:
                 System.out.print("Member Id: ");
@@ -187,7 +188,7 @@ public class Terminal
     public boolean individual_member_report()
     {
         String mem_id;
-        int returned = -1;
+        int returned;
         do
         {
             System.out.println("Member Id: ");

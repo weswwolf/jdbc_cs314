@@ -1,11 +1,23 @@
 import org.junit.jupiter.api.Test;
 import java.io.File;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class myjdbcTest
 {
     // test that we can successfully connect to the database
+
+
+    @Test
+    void get_service_directory() {
+        myjdbc.connect_to_database();
+        ArrayList<Service> list = new ArrayList<>();
+        list = myjdbc.get_service_directory();
+        assertNotEquals(null, list);
+        assertEquals(list.size(), myjdbc.get_count_serv_dir());
+    }
+
     @Test void connect_to_database()
     {
         // assertEquals(expected, actual)
@@ -83,6 +95,7 @@ class myjdbcTest
     @Test
     void member_report()
     {
+
     }
 
     @Test

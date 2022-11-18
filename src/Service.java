@@ -13,7 +13,6 @@ public class Service
     public String provider_id;
     public String member_id;
     public LocalDate date_of_service;
-    public LocalDate current_date;
     public String comments;
     public int number;
 
