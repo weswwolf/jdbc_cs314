@@ -61,6 +61,7 @@ class myjdbcTest
         assertEquals("no-name", s.name); // default service value not changed
     }
 
+    /* Moved to File_ManageTest.java
     @Test
     void write_to_file()
     {
@@ -76,6 +77,7 @@ class myjdbcTest
         // by reading the file text into a string and comparing it to the expected output.
         // make sure to destroy the file if it already exists, or it will not match correctly.
     }
+    */
 
     // UNFILLED TESTS
     @Test
