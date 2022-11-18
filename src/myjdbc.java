@@ -14,19 +14,24 @@ ResultSet -- a table of data representing a database result set usually generate
 */
 
 /*
-    current functions
-    -----------------------
-    -- can look up whether a provider exists with try_provider_id(p_id)
-    -- can look up whether a member exists AND is not suspended with try_member_id(m_id);
-    -- can insert a new table entry into the services table with arguments for the data.
-    -- can read from the weekly table of services
-    -----------------------
-    future functions
-    -----------------------
-    -- make provider files
-    -- do summary report
-    -----------------------
-
+  // CONNECTIONS
+    boolean connect_to_database()
+    void end_connection()
+    // GETTING DATA
+    Boolean fill_member_data(String mem_id, Member m)
+    Boolean fill_provider_data(String pro_id, Provider fill)
+    Boolean fill_service_data(String serv_code, Service s)
+    // VALIDATE
+    int validate_provider(String p_id)
+    int validate_member(String m_id)
+    int validate_service_code(String to_validate)
+    // UTILITY
+    int insert_service_record(Service s)
+    int get_next_service_number()
+    ArrayList<Service> get_service_directory()
+    void generate_individual_report(String mem_id)
+    void append_eft(Service s)
+    void weekly_services()
 */
 
 public class myjdbc {
@@ -160,6 +165,7 @@ public class myjdbc {
 
     //  if the file does not exist, writes the initial details then the service details
     // if the file does exist, only writes the service details. this pattern is followed for the main accounting procedure.
+    /*
     static void write_to_file(String file_name, String service_details, String initial_details)
     {
         try
@@ -190,6 +196,7 @@ public class myjdbc {
             e.printStackTrace();
         }
     }
+    */
 
     // for one service, writes the service to the member report file.
     // if the file does not yet exist, appends initial details at the start.
@@ -217,7 +224,7 @@ public class myjdbc {
                                  "\nMember Number: " + mem_id +
                                  "\nAddress: " + m.combined_address() + '\n';
         // write to file the details of service and optionally the initial details
-        write_to_file(file_name, service_details, initial_details);
+        File_Manage.write_to_file(file_name, service_details, initial_details);
     }
 
     // append the given argument information to the eft. if the eft does not yet exist, append the initial information.
@@ -229,7 +236,7 @@ public class myjdbc {
                 + "End date: " + LocalDate.now() + '\n';
         String service_details = "provider " + s.provider_name + " with provider id " + s.provider_id
                 + " has fee: " + s.fee + " for service on " + s.date_of_service;
-        write_to_file(file_name, service_details, initial_details);
+        File_Manage.write_to_file(file_name, service_details, initial_details);
     }
 
     /* DEPRECATED, see REFACTORED above
@@ -459,7 +466,7 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "cs314");
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "pass");
             stmt = conn.createStatement();
             return true;
         }
@@ -500,7 +507,7 @@ public class myjdbc {
     //function that gets the service directory from the database and returns it
     public static ArrayList<Service> get_service_directory()
     {
-        ArrayList<Service> directory = new ArrayList<Service>();
+        ArrayList<Service> directory = new ArrayList<>();
         try
         {
             rs = stmt.executeQuery("select * from `Service Directory`");

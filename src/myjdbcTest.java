@@ -12,15 +12,33 @@ class myjdbcTest
         assertTrue(myjdbc.connect_to_database());
     }
 
-    // UNFILLED TESTS
     @Test
     void fill_member_data()
     {
+        Member m = new Member();
+        String id = "111112222";
+        myjdbc.connect_to_database();
+        myjdbc.fill_member_data(id,m);
+        assertEquals("Count Chocula", m.name);
+        assertEquals("321 Poof St", m.address);
+        assertEquals("Salem", m.city);
+        assertEquals("OR", m.state);
+        assertEquals("95505", m.zip);
     }
 
     @Test
     void fill_provider_data()
     {
+        Provider p = new Provider();
+        String id = "112233445";
+        myjdbc.connect_to_database();
+        myjdbc.fill_provider_data(id, p);
+        assertEquals("Bob", p.name);
+        assertEquals("1 Birch St", p.address);
+        assertEquals("Salem", p.city);
+        assertEquals("OR", p.state);
+        assertEquals("65656", p.zip);
+
     }
 
     @Test
@@ -43,14 +61,15 @@ class myjdbcTest
         assertEquals("no-name", s.name); // default service value not changed
     }
 
+    /* Moved to File_ManageTest.java
     @Test
     void write_to_file()
     {
         // write to a file that doesn't exist, then make sure that it exists
         // write_to_file(file_name, append_details, initial_details)
         String file_name = "junit_test_file_actual";
-        myjdbc.write_to_file(file_name, "add this text only if the file already exists", "Only add this text if the file didn't exist yet\n");
-        myjdbc.write_to_file(file_name, "add this text only if the file already exists", "this text should not be added\n");
+        File_Manage.write_to_file(file_name, "add this text only if the file already exists", "Only add this text if the file didn't exist yet\n");
+        File_Manage.write_to_file(file_name, "add this text only if the file already exists", "this text should not be added\n");
         File actual = new File(file_name); // actual
         //File expected = new File("junit_test_file_expected");
         assertTrue(actual.exists());
@@ -58,6 +77,9 @@ class myjdbcTest
         // by reading the file text into a string and comparing it to the expected output.
         // make sure to destroy the file if it already exists, or it will not match correctly.
     }
+    */
+
+    // UNFILLED TESTS
     @Test
     void member_report()
     {
