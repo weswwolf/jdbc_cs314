@@ -4,24 +4,21 @@ import java.util.Scanner;
 
 public class Terminal
 {
-    private static Scanner input = new Scanner(System.in);
-    private static ArrayList<Service> directory = new ArrayList<Service>();
+    private static final Scanner input = new Scanner(System.in);
+    private static ArrayList<Service> directory = new ArrayList<>();
 
     //populates the service directory
     public boolean get_service_directory()
     {
         directory = myjdbc.get_service_directory();
-        if (directory == null)
-            return false;
-        return true;
+        return directory != null;
     }
 
     //displays the service directory
     public int view_service_directory()
     {
-        for (int i = 0; i < directory.size(); ++i)
-        {
-            directory.get(i).print_service();
+        for (Service service : directory) {
+            service.print_service();
         }
         return 0;
     }
@@ -97,7 +94,7 @@ public class Terminal
             dos = input.next();
             try
             {
-                LocalDate localDate = LocalDate.parse(dos);
+                LocalDate.parse(dos);
             } catch (Exception E) {
                 System.out.println("Invalid Date/Format (yyyy-mm-dd)");
                 returned = 1;
@@ -144,6 +141,7 @@ public class Terminal
         switch(selection)
         {
             case 1:
+                //TODO use return value
                 int returned = view_service_directory();
                 break;
             case 2:
@@ -187,7 +185,7 @@ public class Terminal
     public boolean individual_member_report()
     {
         String mem_id;
-        int returned = -1;
+        int returned;
         do
         {
             System.out.println("Member Id: ");
@@ -197,7 +195,7 @@ public class Terminal
             if (returned == 2)
                 return false;
         } while (returned == 1);
-        myjdbc.generate_individual_report(mem_id);
+        myjdbc.generate_individual_member_report(mem_id);
         System.out.print("report created\n");
         return true;
     }
