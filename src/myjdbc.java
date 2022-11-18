@@ -235,7 +235,7 @@ public class myjdbc {
                                  "\nMember Number: " + mem_id +
                                  "\nAddress: " + m.combined_address() + '\n';
         // write to file the details of service and optionally the initial details
-        write_to_file(file_name, service_details, initial_details);
+        File_Manage.write_to_file(file_name, service_details, initial_details);
     }
 
     // append the given argument information to the eft. if the eft does not yet exist, append the initial information.
