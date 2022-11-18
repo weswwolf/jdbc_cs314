@@ -175,7 +175,7 @@ public class myjdbc {
     }
     */
 
-
+    /*
     //  if the file does not exist, writes the initial details then the service details
     // if the file does exist, only writes the service details. this pattern is followed for the main accounting procedure.
     static void write_to_file(String file_name, String service_details, String initial_details)
@@ -208,6 +208,7 @@ public class myjdbc {
             e.printStackTrace();
         }
     }
+    */
 
     // for one service, writes the service to the member report file.
     // if the file does not yet exist, appends initial details at the start.
