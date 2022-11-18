@@ -1,6 +1,4 @@
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -169,7 +167,7 @@ public class myjdbc {
     }
     */
 
-
+    /*
     //  if the file does not exist, writes the initial details then the service details
     // if the file does exist, only writes the service details. this pattern is followed for the main accounting procedure.
     static void write_to_file(String file_name, String service_details, String initial_details)
@@ -202,6 +200,7 @@ public class myjdbc {
             e.printStackTrace();
         }
     }
+     */
 
     // for one service, writes the service to the member report file.
     // if the file does not yet exist, appends initial details at the start.
@@ -229,7 +228,7 @@ public class myjdbc {
                                  "\nMember Number: " + mem_id +
                                  "\nAddress: " + m.combined_address() + '\n';
         // write to file the details of service and optionally the initial details
-        write_to_file(file_name, service_details, initial_details);
+        File_Manage.write_to_file(file_name, service_details, initial_details);
     }
 
     // append the given argument information to the eft. if the eft does not yet exist, append the initial information.
@@ -241,7 +240,7 @@ public class myjdbc {
                 + "End date: " + LocalDate.now() + '\n';
         String service_details = "provider " + s.provider_name + " with provider id " + s.provider_id
                 + " has fee: " + s.fee + " for service on " + s.date_of_service;
-        write_to_file(file_name, service_details, initial_details);
+        File_Manage.write_to_file(file_name, service_details, initial_details);
     }
 
     /* DEPRECATED, see REFACTORED above
