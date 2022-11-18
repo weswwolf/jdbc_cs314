@@ -1,4 +1,6 @@
-
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,22 +14,17 @@ ResultSet -- a table of data representing a database result set usually generate
 */
 
 /*
-       current functions
-    -----------------------
-    // CONNECTIONS
+  // CONNECTIONS
     boolean connect_to_database()
     void end_connection()
-
     // GETTING DATA
     Boolean fill_member_data(String mem_id, Member m)
     Boolean fill_provider_data(String pro_id, Provider fill)
     Boolean fill_service_data(String serv_code, Service s)
-
     // VALIDATE
     int validate_provider(String p_id)
     int validate_member(String m_id)
     int validate_service_code(String to_validate)
-
     // UTILITY
     int insert_service_record(Service s)
     int get_next_service_number()
@@ -35,8 +32,6 @@ ResultSet -- a table of data representing a database result set usually generate
     void generate_individual_report(String mem_id)
     void append_eft(Service s)
     void weekly_services()
-
-
 */
 
 public class myjdbc {
@@ -167,9 +162,10 @@ public class myjdbc {
     }
     */
 
-    /*
+
     //  if the file does not exist, writes the initial details then the service details
     // if the file does exist, only writes the service details. this pattern is followed for the main accounting procedure.
+    /*
     static void write_to_file(String file_name, String service_details, String initial_details)
     {
         try
@@ -200,7 +196,7 @@ public class myjdbc {
             e.printStackTrace();
         }
     }
-     */
+    */
 
     // for one service, writes the service to the member report file.
     // if the file does not yet exist, appends initial details at the start.
@@ -374,6 +370,7 @@ public class myjdbc {
     {
         try
         {
+
             // this is the query to insert a service record into the database
             String query = "INSERT INTO `ChocAn`.`Weekly Service Record` (`service_number`, `current-date-time`, `service-date`, `provider_id`, `member_id`, `service_code`, `comments`)  " +
                     //"VALUES ('" +String.valueOf(service_number)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
@@ -469,7 +466,7 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "potato");
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "pass");
             stmt = conn.createStatement();
             return true;
         }
