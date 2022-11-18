@@ -247,7 +247,7 @@ public class myjdbc {
                 + "End date: " + LocalDate.now() + '\n';
         String service_details = "provider " + s.provider_name + " with provider id " + s.provider_id
                 + " has fee: " + s.fee + " for service on " + s.date_of_service;
-        write_to_file(file_name, service_details, initial_details);
+        File_Manage.write_to_file(file_name, service_details, initial_details);
     }
 
     /* DEPRECATED, see REFACTORED above
@@ -260,7 +260,7 @@ public class myjdbc {
                 + "End date: " + LocalDate.now() + '\n';
         String service_details = "provider " + prov_name + " with provider id " + pro_id
                 + " has fee: " + provider_fee + " for service on " + dos;
-        write_to_file(file_name, service_details, initial_details);
+        File_Manage.write_to_file(file_name, service_details, initial_details);
     }
     */
 
