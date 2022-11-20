@@ -1,4 +1,6 @@
+import javax.print.attribute.standard.DateTimeAtCreation;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Service
 {
@@ -13,6 +15,7 @@ public class Service
     public String provider_id;
     public String member_id;
     public LocalDate date_of_service;
+    public LocalDateTime current_date_time;
     public String comments;
     public int number;
 
