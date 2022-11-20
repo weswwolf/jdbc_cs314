@@ -140,6 +140,9 @@ public class Terminal
             case 4:
                 individual_member_report();
                 break;
+            case 5:
+                individual_provider_report();
+                break;
             default:
                 break;
         }
@@ -200,11 +203,26 @@ public class Terminal
             if (returned == 2)
                 return false;
         } while (returned == 1);
-        myjdbc.generate_individual_report(mem_id);
+        myjdbc.generate_individual_member_report(mem_id);
         System.out.print("report created\n");
         return true;
     }
-
+    public boolean individual_provider_report()
+    {
+        String prov_id;
+        int returned;
+        do
+        {
+            System.out.println("Provider Id: ");
+            prov_id = input.next();
+            returned = verify_provider(prov_id);
+            if (returned != 0)
+                return false;
+        } while (returned != 0);
+        myjdbc.generate_individual_provider_report(prov_id);
+        System.out.print("report created\n");
+        return true;
+    }
 
     static public void main(String[] args)
     {

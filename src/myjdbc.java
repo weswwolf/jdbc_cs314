@@ -55,7 +55,7 @@ public class myjdbc {
     }
 
     public static int get_count_serv_dir(){
-        String query = "select count(*) from `Service Directory`";
+        String query = "select count(*) from `Service_Directory`";
         try{
             rs = stmt.executeQuery(query);
             if(rs.next()) {
@@ -235,6 +235,33 @@ public class myjdbc {
         String initial_details = "Record of Service for " + m.name +
                                  "\nMember Number: " + mem_id +
                                  "\nAddress: " + m.combined_address() + '\n';
+        // write to file the details of service and optionally the initial details
+        File_Manage.write_to_file(file_name, service_details, initial_details);
+    }
+    static void provider_report(Member n, Service s, Provider p)
+    {
+        String file_name = p.name.replaceAll("\\s", "").concat("-"+p.provider_id);
+        // member_info[1] == address, city, state, zip
+        // check whether the member has an existing file (current directory)
+        // if they don't then we need to append the member information at the start.
+        // it is convenient to use the members name as their file name, as long as no two members have the exact same name.
+        String service_details = s.code + " was completed with patient " + n.name + " (" + n.member_id + ") on date " +
+                s.date_of_service + " entered into computer at " + s.current_date_time + " with fee charge of " + s.fee;
+        String initial_details = "Record of Service for " + p.name +
+                "\nProvider Number: " + p.provider_id +
+                "\nAddress: " + p.combined_address() + '\n';
+        // write to file the details of service and optionally the initial details
+        File_Manage.write_to_file(file_name, service_details, initial_details);
+    }
+    static void append_provider_report(Provider p, int num_consults, float total_fee)
+    {
+        String file_name = p.name.replaceAll("\\s", "").concat("-"+p.provider_id);
+        // member_info[1] == address, city, state, zip
+        // check whether the member has an existing file (current directory)
+        // if they don't then we need to append the member information at the start.
+        // it is convenient to use the members name as their file name, as long as no two members have the exact same name.
+        String service_details = "Total Consultations: " + num_consults + "\tTotal Fees: " + total_fee;
+        String initial_details = "";
         // write to file the details of service and optionally the initial details
         File_Manage.write_to_file(file_name, service_details, initial_details);
     }
@@ -478,7 +505,7 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "bltop", "Tortle17!");
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "cs314");
             stmt = conn.createStatement();
             return true;
         }
@@ -519,7 +546,7 @@ public class myjdbc {
     //function that gets the service directory from the database and returns it
     public static ArrayList<Service> get_service_directory()
     {
-        ArrayList<Service> directory = new ArrayList<>();
+        ArrayList<Service> directory = new ArrayList<Service>();
         try
         {
             rs = stmt.executeQuery("select * from `Service Directory`");
@@ -542,10 +569,11 @@ public class myjdbc {
         return directory;
     }
 
-    public static void generate_individual_report(String mem_id)
+    public static void generate_individual_member_report(String mem_id)
     {
         Service s = new Service();
         Member n = new Member();
+        Provider p = new Provider();
         myjdbc.fill_member_data(mem_id, n);
         String file_name = n.name.replaceAll("\\s", "").concat("-" + mem_id);
         File_Manage.delete_file(file_name);
@@ -555,12 +583,47 @@ public class myjdbc {
             while (rs.next())
             {
                 s.member_id = mem_id;
-                s.provider_name = "Steve";
                 s.date_of_service = rs.getDate("service-date").toLocalDate();
                 s.code = rs.getString("service_code");
+                s.provider_id = rs.getString("provider_id");
+                myjdbc.fill_provider_data(s.provider_id, p);
                 fill_service_data(s.code, s);
-                member_report(s.provider_name, s.date_of_service.toString(), s.name, s.member_id);
+                member_report(p.name, s.date_of_service.toString(), s.name, s.member_id);
             }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+    public static void generate_individual_provider_report(String prov_id)
+    {
+        int num_consults = 0;
+        float total_fee = 0.0F;
+        Service s = new Service();
+        Member n = new Member();
+        Provider p = new Provider();
+        myjdbc.fill_provider_data(prov_id, p);
+        String file_name = n.name.replaceAll("\\s", "").concat("-" + prov_id);
+        File_Manage.delete_file(file_name);
+        try
+        {
+            rs = stmt.executeQuery("select * from `Weekly Service Record` where provider_id=" + prov_id);
+            while (rs.next())
+            {
+                s.provider_id = prov_id;
+                s.date_of_service = rs.getDate("service-date").toLocalDate();
+                s.code = rs.getString("service_code");
+                s.current_date_time = rs.getTimestamp("current-date-time").toLocalDateTime();
+                s.member_id = rs.getString("member_id");
+                myjdbc.fill_service_data(s.code, s);
+                myjdbc.fill_member_data(s.member_id, n);
+                myjdbc.fill_provider_data(s.provider_id, p);
+                provider_report(n, s, p);
+                num_consults++;
+                total_fee += s.fee;
+            }
+            append_provider_report(p, num_consults, total_fee);
         }
         catch (Exception e)
         {
