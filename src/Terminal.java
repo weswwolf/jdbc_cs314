@@ -29,25 +29,6 @@ public class Terminal
     }
 
 
-    //main user interface of the terminal
-    public int menu_selection()
-    {
-        int selection;
-        System.out.print("Terminal Menu\n\n");
-        System.out.println("1 - View Service Directory");
-        System.out.println("2 - Validate a Member");
-        System.out.println("3 - Bill a Member");
-        System.out.println("4 - Individual Member Report");
-        System.out.println("5 - Individual Provider Report");
-        System.out.println("6 - Run Weekly Report");
-
-        System.out.println("9 - LOGOUT");
-
-        selection = input.nextInt();
-
-        return selection;
-    }
-
     //validates that a provider id is in the database
     public int verify_provider(String prov_id)
     {
@@ -146,6 +127,7 @@ public class Terminal
         switch(selection)
         {
             case 1:
+                view_service_directory();
                 break;
             case 2:
                 System.out.print("Member Id: ");
@@ -157,9 +139,29 @@ public class Terminal
                 break;
             case 4:
                 individual_member_report();
+                break;
             default:
                 break;
         }
+    }
+
+    //main user interface of the terminal
+    public int menu_selection()
+    {
+        int selection;
+        System.out.print("Terminal Menu\n\n");
+        System.out.println("1 - View Service Directory");
+        System.out.println("2 - Validate a Member");
+        System.out.println("3 - Bill a Member");
+        System.out.println("4 - Individual Member Report");
+        System.out.println("5 - Individual Provider Report");
+        System.out.println("6 - Run Weekly Report");
+
+        System.out.println("9 - LOGOUT");
+
+        selection = input.nextInt();
+
+        return selection;
     }
 
     //this function handles the return value that is returned when validating a member id. Return 0 if member valid,

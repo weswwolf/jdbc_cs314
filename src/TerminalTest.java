@@ -17,4 +17,13 @@ class TerminalTest {
         //testing for a invalid provider id
         assertEquals(2, myjdbc.validate_provider(bad_prov_id), "expected not validated, failed");
     }
+
+    @Test
+    void handle_member() {
+        Terminal t = new Terminal();
+        assertEquals(t.handle_member(0), 0);
+        assertEquals(t.handle_member(4), 2);
+        assertEquals(t.handle_member(1), 1);
+    }
+
 }

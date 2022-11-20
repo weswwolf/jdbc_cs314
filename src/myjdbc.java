@@ -55,7 +55,7 @@ public class myjdbc {
     }
 
     public static int get_count_serv_dir(){
-        String query = "select count(*) from `Service_Directory`";
+        String query = "select count(*) from `Service Directory`";
         try{
             rs = stmt.executeQuery(query);
             if(rs.next()) {
@@ -478,7 +478,7 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "localhost");
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "bltop", "Tortle17!");
             stmt = conn.createStatement();
             return true;
         }
@@ -519,7 +519,7 @@ public class myjdbc {
     //function that gets the service directory from the database and returns it
     public static ArrayList<Service> get_service_directory()
     {
-        ArrayList<Service> directory = new ArrayList<Service>();
+        ArrayList<Service> directory = new ArrayList<>();
         try
         {
             rs = stmt.executeQuery("select * from `Service Directory`");
