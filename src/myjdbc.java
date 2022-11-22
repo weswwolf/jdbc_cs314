@@ -307,11 +307,14 @@ public class myjdbc {
     */
 
     // function to read Weekly Services Record table one at a time to do the main accounting procedure, EFT, and summary report
+    //TODO JohnSmith is the ONLY provider currently being added to the array list
     static void weekly_services()
     {
+        File_Manage.delete_all_files();
         Provider p = new Provider();
-        //Member m = new Member();
+        Member m = new Member();
         Service s = new Service();
+        ArrayList <Provider> arp = new ArrayList<Provider>();
         try
         {
             // create provider and member files for the services in the Weekly Service record.
@@ -354,6 +357,24 @@ public class myjdbc {
                     // add to the total consultations
                     // add the fee to the total provider fees.
                 }
+                myjdbc.fill_member_data(s.member_id, m);
+                provider_report(m, s, p);
+//                if (!arp.contains(p.name))
+//                {
+//                    arp.add(p);
+//                }
+                boolean found = false;
+                for (int i = 0; i < arp.size(); i++)
+                {
+                    if (arp.get(i).name == p.name)
+                        found = true;
+                }
+                if (!found)
+                {
+                    arp.add(p);
+                }
+                arp.get(arp.indexOf(p)).consultations++;
+                arp.get(arp.indexOf(p)).total_fee += s.fee;
 
                 // EFT
                 //append_eft(p.name, p.provider_id, String.valueOf(s.date_of_service), s.fee);
@@ -362,10 +383,19 @@ public class myjdbc {
                     // lists providers and total fees
                 }
             }
+
         }
         catch (Exception e)
         {
             e.printStackTrace();
+        }
+        for (int i = 0; i < arp.size(); i++)
+        {
+            System.out.println(arp.get(i).name);
+        }
+        for (int i = 0; i < arp.size(); i++)
+        {
+            append_provider_report(arp.get(i), arp.get(i).consultations, arp.get(i).total_fee);
         }
         // end weekly_function
     }
@@ -643,6 +673,46 @@ public class myjdbc {
         {
             e.printStackTrace();
         }
+    }
+
+    //function that returns array list of providers name and id
+    static ArrayList<Provider> get_all_providers()
+    {
+        ArrayList<Provider> p = new ArrayList<Provider>();
+        try
+        {
+            rs = stmt.executeQuery("select * from Providers");
+            while (rs.next()) {
+                Provider np = new Provider();
+                np.name = rs.getString("name");
+                np.provider_id = rs.getString("id");
+                p.add(np);
+            }
+        }
+        catch (Exception e)
+        {
+        }
+        return p;
+    }
+
+    //function that returns array list of Members name and id
+    static ArrayList<Member> get_all_members()
+    {
+        ArrayList<Member> m = new ArrayList<Member>();
+        try
+        {
+            rs = stmt.executeQuery("select * from Members");
+            while (rs.next()) {
+                Member nm = new Member();
+                nm.name = rs.getString("name");
+                nm.member_id = rs.getString("id");
+                m.add(nm);
+            }
+        }
+        catch (Exception e)
+        {
+        }
+        return m;
     }
 
     public static void main(String[] args)
