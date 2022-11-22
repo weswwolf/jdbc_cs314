@@ -8,11 +8,11 @@ public class Terminal
     private static ArrayList<Service> directory;
 
     //populates the service directory
-    public boolean get_service_directory()
-    {
-        directory = myjdbc.get_service_directory();
-        return directory != null;
-    }
+//    public boolean get_service_directory()
+//    {
+//        directory = myjdbc.get_service_directory();
+//        return directory != null;
+//    }
 
     public Terminal(){
         input = new Scanner(System.in);
@@ -20,12 +20,11 @@ public class Terminal
     }
 
     //displays the service directory
-    public int view_service_directory()
+    public void view_service_directory()
     {
         for (Service service : directory) {
             service.print_service();
         }
-        return 0;
     }
 
 
@@ -80,7 +79,7 @@ public class Terminal
             dos = input.next();
             try
             {
-                LocalDate localDate = LocalDate.parse(dos);
+                LocalDate.parse(dos);
             } catch (Exception E) {
                 System.out.println("Invalid Date/Format (yyyy-mm-dd)");
                 returned = 1;
@@ -193,7 +192,7 @@ public class Terminal
     }
 
     //creates a report of services rendered for an individual member
-    public boolean individual_member_report()
+    public void individual_member_report()
     {
         String mem_id;
         int returned;
@@ -202,15 +201,11 @@ public class Terminal
             System.out.println("Member Id: ");
             mem_id = input.next();
             returned = handle_member(myjdbc.validate_member(mem_id));
-            //if member is suspended, return to main menu
-            if (returned == 2)
-                return false;
         } while (returned == 1);
         myjdbc.generate_individual_member_report(mem_id);
         System.out.print("report created\n");
-        return true;
     }
-    public boolean individual_provider_report()
+    public void individual_provider_report()
     {
         String prov_id;
         int returned;
@@ -219,12 +214,9 @@ public class Terminal
             System.out.println("Provider Id: ");
             prov_id = input.next();
             returned = verify_provider(prov_id);
-            if (returned != 0)
-                return false;
         } while (returned != 0);
         myjdbc.generate_individual_provider_report(prov_id);
         System.out.print("report created\n");
-        return true;
     }
 
     static public void main(String[] args)

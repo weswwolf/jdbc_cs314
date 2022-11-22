@@ -1,5 +1,4 @@
 import org.junit.jupiter.api.Test;
-import java.io.File;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,7 +11,7 @@ class myjdbcTest
     @Test
     void get_service_directory() {
         myjdbc.connect_to_database();
-        ArrayList<Service> list = null;
+        ArrayList<Service> list;
         list = myjdbc.get_service_directory();
         assertNotEquals(null, list);
         assertEquals(list.size(), myjdbc.get_count_serv_dir());

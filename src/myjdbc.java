@@ -1,6 +1,3 @@
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -307,14 +304,18 @@ public class myjdbc {
     */
 
     // function to read Weekly Services Record table one at a time to do the main accounting procedure, EFT, and summary report
-    //TODO JohnSmith is the ONLY provider currently being added to the array list
+    //TODO eventually refactor static provider array to a dynamic method
     static void weekly_services()
     {
         File_Manage.delete_all_files();
         Provider p = new Provider();
         Member m = new Member();
         Service s = new Service();
-        ArrayList <Provider> arp = new ArrayList<Provider>();
+        boolean found;
+        Provider[] arr_prov = new Provider[100];
+        for (int i = 0; i < 20; i++)
+            arr_prov[i] = new Provider();
+        int size = 0;
         try
         {
             // create provider and member files for the services in the Weekly Service record.
@@ -341,6 +342,7 @@ public class myjdbc {
                     System.out.println("error filling provider data.");
                 }
 
+
                 // lookup the member with their member id for their personal details (name, address)
                 // then write to file about the service details
                 member_report(p.name, String.valueOf(s.date_of_service), s.name, s.member_id);
@@ -359,22 +361,27 @@ public class myjdbc {
                 }
                 myjdbc.fill_member_data(s.member_id, m);
                 provider_report(m, s, p);
-//                if (!arp.contains(p.name))
-//                {
-//                    arp.add(p);
-//                }
-                boolean found = false;
-                for (int i = 0; i < arp.size(); i++)
+
+                found = false;
+                for (int i = 0; i < size; ++i)
                 {
-                    if (arp.get(i).name == p.name)
+                    if (arr_prov[i].name.equals(p.name))
+                    {
                         found = true;
+                        arr_prov[i].consultations++;
+                        arr_prov[i].total_fee += s.fee;
+                        break;
+                    }
                 }
                 if (!found)
                 {
-                    arp.add(p);
+                    myjdbc.fill_provider_data(p.provider_id, arr_prov[size]);
+                    arr_prov[size].consultations++;
+                    arr_prov[size].total_fee += s.fee;
+                    if (size < 19)
+                        size++;
                 }
-                arp.get(arp.indexOf(p)).consultations++;
-                arp.get(arp.indexOf(p)).total_fee += s.fee;
+
 
                 // EFT
                 //append_eft(p.name, p.provider_id, String.valueOf(s.date_of_service), s.fee);
@@ -389,13 +396,10 @@ public class myjdbc {
         {
             e.printStackTrace();
         }
-        for (int i = 0; i < arp.size(); i++)
+        for (int i = 0; i < size; i++)
         {
-            System.out.println(arp.get(i).name);
-        }
-        for (int i = 0; i < arp.size(); i++)
-        {
-            append_provider_report(arp.get(i), arp.get(i).consultations, arp.get(i).total_fee);
+            append_provider_report(arr_prov[i], arr_prov[i].consultations, arr_prov[i].total_fee);
+            //System.out.println(arr_prov[i].name);
         }
         // end weekly_function
     }
@@ -449,27 +453,27 @@ public class myjdbc {
     // returns:
     //  success = 0
     //  database issue = 1
-    public static int insert_service_record(LocalDate service_date, String provider_id, String member_id, String service_code, String comments)
-    {
-        try
-        {
-
-            // this is the query to insert a service record into the database
-            String query = "INSERT INTO `ChocAn`.`Weekly Service Record` (`service_number`, `current-date-time`, `service-date`, `provider_id`, `member_id`, `service_code`, `comments`)  " +
-                    //"VALUES ('" +String.valueOf(service_number)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
-                    //"VALUES ('" + userPreferences.getInt("service_number", 0)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
-                    "VALUES ('" + get_next_service_number()+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
-                    // instead of doing a query, we are doing an update because we are updating a value in the database.
-            //rs = stmt.executeQuery(query);
-            stmt.executeUpdate(query);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return 1; // problem with query
-        }
-        return 0; // success
-    }
+//    public static int insert_service_record(LocalDate service_date, String provider_id, String member_id, String service_code, String comments)
+//    {
+//        try
+//        {
+//
+//            // this is the query to insert a service record into the database
+//            String query = "INSERT INTO `ChocAn`.`Weekly Service Record` (`service_number`, `current-date-time`, `service-date`, `provider_id`, `member_id`, `service_code`, `comments`)  " +
+//                    //"VALUES ('" +String.valueOf(service_number)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
+//                    //"VALUES ('" + userPreferences.getInt("service_number", 0)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
+//                    "VALUES ('" + get_next_service_number()+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
+//                    // instead of doing a query, we are doing an update because we are updating a value in the database.
+//            //rs = stmt.executeQuery(query);
+//            stmt.executeUpdate(query);
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//            return 1; // problem with query
+//        }
+//        return 0; // success
+//    }
 
     /* try to validate a provider by querying the database with the provider's id.
         return:
@@ -590,7 +594,7 @@ public class myjdbc {
     //function that gets the service directory from the database and returns it
     public static ArrayList<Service> get_service_directory()
     {
-        ArrayList<Service> directory = new ArrayList<Service>();
+        ArrayList<Service> directory = new ArrayList<>();
         try
         {
             rs = stmt.executeQuery("select * from `Service Directory`");
@@ -648,7 +652,8 @@ public class myjdbc {
         Member n = new Member();
         Provider p = new Provider();
         myjdbc.fill_provider_data(prov_id, p);
-        String file_name = n.name.replaceAll("\\s", "").concat("-" + prov_id);
+        String file_name = p.name.replaceAll("\\s", "").concat("-" + prov_id);
+        System.out.println(file_name);
         File_Manage.delete_file(file_name);
         try
         {
@@ -678,7 +683,7 @@ public class myjdbc {
     //function that returns array list of providers name and id
     static ArrayList<Provider> get_all_providers()
     {
-        ArrayList<Provider> p = new ArrayList<Provider>();
+        ArrayList<Provider> p = new ArrayList<>();
         try
         {
             rs = stmt.executeQuery("select * from Providers");
@@ -691,6 +696,7 @@ public class myjdbc {
         }
         catch (Exception e)
         {
+            System.out.println("ERROR");
         }
         return p;
     }
@@ -698,7 +704,7 @@ public class myjdbc {
     //function that returns array list of Members name and id
     static ArrayList<Member> get_all_members()
     {
-        ArrayList<Member> m = new ArrayList<Member>();
+        ArrayList<Member> m = new ArrayList<>();
         try
         {
             rs = stmt.executeQuery("select * from Members");
@@ -711,6 +717,7 @@ public class myjdbc {
         }
         catch (Exception e)
         {
+            System.out.println("ERROR");
         }
         return m;
     }
