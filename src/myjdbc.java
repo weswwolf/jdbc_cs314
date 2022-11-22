@@ -1,6 +1,3 @@
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -314,7 +311,7 @@ public class myjdbc {
         Provider p = new Provider();
         Member m = new Member();
         Service s = new Service();
-        boolean found = false;
+        boolean found;
         Provider[] arr_prov = new Provider[100];
         for (int i = 0; i < 20; i++)
             arr_prov[i] = new Provider();
@@ -456,27 +453,27 @@ public class myjdbc {
     // returns:
     //  success = 0
     //  database issue = 1
-    public static int insert_service_record(LocalDate service_date, String provider_id, String member_id, String service_code, String comments)
-    {
-        try
-        {
-
-            // this is the query to insert a service record into the database
-            String query = "INSERT INTO `ChocAn`.`Weekly Service Record` (`service_number`, `current-date-time`, `service-date`, `provider_id`, `member_id`, `service_code`, `comments`)  " +
-                    //"VALUES ('" +String.valueOf(service_number)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
-                    //"VALUES ('" + userPreferences.getInt("service_number", 0)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
-                    "VALUES ('" + get_next_service_number()+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
-                    // instead of doing a query, we are doing an update because we are updating a value in the database.
-            //rs = stmt.executeQuery(query);
-            stmt.executeUpdate(query);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return 1; // problem with query
-        }
-        return 0; // success
-    }
+//    public static int insert_service_record(LocalDate service_date, String provider_id, String member_id, String service_code, String comments)
+//    {
+//        try
+//        {
+//
+//            // this is the query to insert a service record into the database
+//            String query = "INSERT INTO `ChocAn`.`Weekly Service Record` (`service_number`, `current-date-time`, `service-date`, `provider_id`, `member_id`, `service_code`, `comments`)  " +
+//                    //"VALUES ('" +String.valueOf(service_number)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
+//                    //"VALUES ('" + userPreferences.getInt("service_number", 0)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
+//                    "VALUES ('" + get_next_service_number()+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
+//                    // instead of doing a query, we are doing an update because we are updating a value in the database.
+//            //rs = stmt.executeQuery(query);
+//            stmt.executeUpdate(query);
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//            return 1; // problem with query
+//        }
+//        return 0; // success
+//    }
 
     /* try to validate a provider by querying the database with the provider's id.
         return:
@@ -597,7 +594,7 @@ public class myjdbc {
     //function that gets the service directory from the database and returns it
     public static ArrayList<Service> get_service_directory()
     {
-        ArrayList<Service> directory = new ArrayList<Service>();
+        ArrayList<Service> directory = new ArrayList<>();
         try
         {
             rs = stmt.executeQuery("select * from `Service Directory`");
@@ -655,7 +652,8 @@ public class myjdbc {
         Member n = new Member();
         Provider p = new Provider();
         myjdbc.fill_provider_data(prov_id, p);
-        String file_name = n.name.replaceAll("\\s", "").concat("-" + prov_id);
+        String file_name = p.name.replaceAll("\\s", "").concat("-" + prov_id);
+        System.out.println(file_name);
         File_Manage.delete_file(file_name);
         try
         {
@@ -685,7 +683,7 @@ public class myjdbc {
     //function that returns array list of providers name and id
     static ArrayList<Provider> get_all_providers()
     {
-        ArrayList<Provider> p = new ArrayList<Provider>();
+        ArrayList<Provider> p = new ArrayList<>();
         try
         {
             rs = stmt.executeQuery("select * from Providers");
@@ -698,6 +696,7 @@ public class myjdbc {
         }
         catch (Exception e)
         {
+            System.out.println("ERROR");
         }
         return p;
     }
@@ -705,7 +704,7 @@ public class myjdbc {
     //function that returns array list of Members name and id
     static ArrayList<Member> get_all_members()
     {
-        ArrayList<Member> m = new ArrayList<Member>();
+        ArrayList<Member> m = new ArrayList<>();
         try
         {
             rs = stmt.executeQuery("select * from Members");
@@ -718,6 +717,7 @@ public class myjdbc {
         }
         catch (Exception e)
         {
+            System.out.println("ERROR");
         }
         return m;
     }

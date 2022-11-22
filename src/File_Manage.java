@@ -9,27 +9,28 @@ public class File_Manage
 {
     public static void delete_file(String to_delete)
     {
-        File delete = new File(to_delete);
-        delete.delete();
+        File d_delete = new File(to_delete);
+        if(d_delete.delete())
+            System.out.println(to_delete + " Deleted");
     }
 
     public static void delete_all_files()
     {
-        ArrayList<Member> m = new ArrayList<Member>();
-        ArrayList<Provider> p = new ArrayList<Provider>();
+        ArrayList<Member> m;
+        ArrayList<Provider> p;
         m = myjdbc.get_all_members();
         p = myjdbc.get_all_providers();
 
         //interate through array list and do the following for each
-        for (int i = 0; i < m.size(); i++)
+        for (Member member : m)
         {
-            String file_name = m.get(i).name.replaceAll("\\s", "").concat("-" + m.get(i).member_id);
+            String file_name = member.name.replaceAll("\\s", "").concat("-" + member.member_id);
             File_Manage.delete_file(file_name);
         }
 //        String file_name = n.name.replaceAll("\\s", "").concat("-" + mem_id);
-        for (int i = 0; i < p.size(); i++)
+        for (Provider provider : p)
         {
-            String file_name = p.get(i).name.replaceAll("\\s", "").concat("-" + p.get(i).provider_id);
+            String file_name = provider.name.replaceAll("\\s", "").concat("-" + provider.provider_id);
             File_Manage.delete_file(file_name);
         }
 //        File_Manage.delete_file(file_name);
