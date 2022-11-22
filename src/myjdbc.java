@@ -307,14 +307,18 @@ public class myjdbc {
     */
 
     // function to read Weekly Services Record table one at a time to do the main accounting procedure, EFT, and summary report
-    //TODO JohnSmith is the ONLY provider currently being added to the array list
+    //TODO eventually refactor static provider array to a dynamic method
     static void weekly_services()
     {
         File_Manage.delete_all_files();
         Provider p = new Provider();
         Member m = new Member();
         Service s = new Service();
-        ArrayList <Provider> arp = new ArrayList<Provider>();
+        boolean found = false;
+        Provider[] arr_prov = new Provider[100];
+        for (int i = 0; i < 20; i++)
+            arr_prov[i] = new Provider();
+        int size = 0;
         try
         {
             // create provider and member files for the services in the Weekly Service record.
@@ -341,6 +345,7 @@ public class myjdbc {
                     System.out.println("error filling provider data.");
                 }
 
+
                 // lookup the member with their member id for their personal details (name, address)
                 // then write to file about the service details
                 member_report(p.name, String.valueOf(s.date_of_service), s.name, s.member_id);
@@ -359,22 +364,27 @@ public class myjdbc {
                 }
                 myjdbc.fill_member_data(s.member_id, m);
                 provider_report(m, s, p);
-//                if (!arp.contains(p.name))
-//                {
-//                    arp.add(p);
-//                }
-                boolean found = false;
-                for (int i = 0; i < arp.size(); i++)
+
+                found = false;
+                for (int i = 0; i < size; ++i)
                 {
-                    if (arp.get(i).name == p.name)
+                    if (arr_prov[i].name.equals(p.name))
+                    {
                         found = true;
+                        arr_prov[i].consultations++;
+                        arr_prov[i].total_fee += s.fee;
+                        break;
+                    }
                 }
                 if (!found)
                 {
-                    arp.add(p);
+                    myjdbc.fill_provider_data(p.provider_id, arr_prov[size]);
+                    arr_prov[size].consultations++;
+                    arr_prov[size].total_fee += s.fee;
+                    if (size < 19)
+                        size++;
                 }
-                arp.get(arp.indexOf(p)).consultations++;
-                arp.get(arp.indexOf(p)).total_fee += s.fee;
+
 
                 // EFT
                 //append_eft(p.name, p.provider_id, String.valueOf(s.date_of_service), s.fee);
@@ -389,13 +399,10 @@ public class myjdbc {
         {
             e.printStackTrace();
         }
-        for (int i = 0; i < arp.size(); i++)
+        for (int i = 0; i < size; i++)
         {
-            System.out.println(arp.get(i).name);
-        }
-        for (int i = 0; i < arp.size(); i++)
-        {
-            append_provider_report(arp.get(i), arp.get(i).consultations, arp.get(i).total_fee);
+            append_provider_report(arr_prov[i], arr_prov[i].consultations, arr_prov[i].total_fee);
+            //System.out.println(arr_prov[i].name);
         }
         // end weekly_function
     }
