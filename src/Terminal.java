@@ -143,6 +143,9 @@ public class Terminal
             case 5:
                 individual_provider_report();
                 break;
+            case 6:
+                myjdbc.weekly_services();
+                break;
             default:
                 break;
         }
