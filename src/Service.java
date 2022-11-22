@@ -30,6 +30,14 @@ public class Service
         fee = 0.0f;
     }
 
+    public Service(LocalDate _date, String _id, String _mem_id, String _svc_code, String _comments){
+        this.date_of_service = _date;
+        this.provider_id = _id;
+        this.member_id = _mem_id;
+        this.code = _svc_code;
+        this.comments = _comments;
+    }
+
     public void print_service()
     {
         System.out.printf("%-10s %-29s %-8.2f %s", code, name, fee, description);

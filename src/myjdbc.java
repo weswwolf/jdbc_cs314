@@ -34,9 +34,9 @@ ResultSet -- a table of data representing a database result set usually generate
 */
 
 public class myjdbc {
-    private static Connection conn;
-    private static Statement stmt;
-    private static ResultSet rs;
+    public static Connection conn;
+    public static Statement stmt;
+    public static ResultSet rs;
 
     // close the connection to the database.
     // should be done once at the end of the session
@@ -55,11 +55,25 @@ public class myjdbc {
     }
 
     public static int get_count_serv_dir(){
-        String query = "select count(*) from `Service_Directory`";
+        String query = "select count(*) from `Service Directory`";
         try{
             rs = stmt.executeQuery(query);
             if(rs.next()) {
                return rs.getInt(1);
+            }
+        }
+        catch(Exception e){
+            return -1;
+        }
+        return 0;
+    }
+
+    public static int get_count_wkly_svc(){
+        String query = "select count(*) from `Weekly Service Record`";
+        try{
+            rs = stmt.executeQuery(query);
+            if(rs.next()) {
+                return rs.getInt(1);
             }
         }
         catch(Exception e){

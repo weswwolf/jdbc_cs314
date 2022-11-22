@@ -12,7 +12,7 @@ class myjdbcTest
     @Test
     void get_service_directory() {
         myjdbc.connect_to_database();
-        ArrayList<Service> list = new ArrayList<>();
+        ArrayList<Service> list = null;
         list = myjdbc.get_service_directory();
         assertNotEquals(null, list);
         assertEquals(list.size(), myjdbc.get_count_serv_dir());
