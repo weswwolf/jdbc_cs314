@@ -7,6 +7,12 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.io.*;
 
+/*
+    void add_to_database()
+    void write_member_reports()
+    void write_provider_reports()
+    void write_summary_report()
+ */
 
 class SmokeTest {
     @Test

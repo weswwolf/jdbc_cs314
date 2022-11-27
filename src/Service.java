@@ -1,6 +1,12 @@
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/*
+    public Service(LocalDate _date, String _id, String _mem_id, String _svc_code, String _comments){
+    public void print_service()
+    public void set_insert_service(String prov_id, String mem_id, LocalDate dos, String com, String s_code)
+ */
+
 public class Service
 {
     //generic data member for all service objects

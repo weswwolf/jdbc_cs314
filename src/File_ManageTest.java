@@ -3,11 +3,30 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.*;
+/*
+    void delete_file(String to_delete)
+    void delete_all_files()
+    void write_to_file(String file_name, String service_details, String initial_details)
 
+ */
 class File_ManageTest {
 
     @Test
     void delete_file() {
+        String file = "to_delete";
+        File to_delete = new File(file);
+        File_Manage.write_to_file(file, "add this text only if the file already exists", "Only add this text if the file didn't exist yet\n");
+        File_Manage.write_to_file(file, "add this text only if the file already exists", "this text should not be added\n");
+        File_Manage.delete_file(file);
+        // Since the file has been deleted, the FILE delete function should return false
+        assertFalse(to_delete.delete());
+    }
+
+    @Test
+    void delete_all_files() {
+
+        //myjdbc.weekly_services();
+
     }
 
     @Test

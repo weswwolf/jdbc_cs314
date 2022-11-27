@@ -1,3 +1,7 @@
+/*
+    public void set_all_personal(String name_, String address_, String city_, String state_, String zip_)
+    public String combined_address()
+ */
 abstract class Personal
 {
 
