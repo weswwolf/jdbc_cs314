@@ -1,7 +1,10 @@
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+/*
+    void verify_provider()
+    void handle_member()
+ */
 class TerminalTest {
 
     @Test

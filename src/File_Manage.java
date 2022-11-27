@@ -3,7 +3,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 
-//TODO Move the write_to_file function from myjdbc into this class
+/* Functions
+    static void delete_file(String to_delete)
+    static void delete_all_files()
+    static void write_to_file(String file_name, String service_details, String initial_details)
+*/
 
 public class File_Manage
 {
@@ -21,7 +25,7 @@ public class File_Manage
         m = myjdbc.get_all_members();
         p = myjdbc.get_all_providers();
 
-        //interate through array list and do the following for each
+        //iterate through array list and do the following for each
         for (Member member : m)
         {
             String file_name = member.name.replaceAll("\\s", "").concat("-" + member.member_id);

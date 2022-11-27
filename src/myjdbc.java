@@ -337,11 +337,13 @@ public class myjdbc {
                     System.out.println("error filling service data.");
                 }
                 // get the provider information for this service
-                if (!fill_provider_data(s.provider_id,p))
+                if (fill_provider_data(s.provider_id,p))
                 {
+                    s.provider_name = p.name;
+                }
+                else {
                     System.out.println("error filling provider data.");
                 }
-
 
                 // lookup the member with their member id for their personal details (name, address)
                 // then write to file about the service details
