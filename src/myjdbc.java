@@ -159,67 +159,6 @@ public class myjdbc {
         return false;
     }
 
-    /* REFACTORED ABOVE, deprecated
-    // use the service code to return the name as a string and fill the fee with the value from the service directory.
-    // this could be refactored to return a Service object instead of a fee f and string name
-    static String fill_service_data(String serv_code, fee f)
-    {
-        try
-        {
-            Statement serv_stmt = conn.createStatement();
-            String query = "select * from `Service Directory` where service_code=" + serv_code;
-            ResultSet serv_search = serv_stmt.executeQuery(query);
-            if (serv_search.next())
-            {
-                String service_name = serv_search.getString("service_name");
-                f.f = serv_search.getInt("service_fee"); // reference value is changed
-                serv_stmt.close();
-                return service_name;
-            }
-            serv_stmt.close();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return "missing-service-name";
-    }
-    */
-
-    /*
-    //  if the file does not exist, writes the initial details then the service details
-    // if the file does exist, only writes the service details. this pattern is followed for the main accounting procedure.
-    static void write_to_file(String file_name, String service_details, String initial_details)
-    {
-        try
-        {
-            File output_file = new File(file_name); // get rid of spaces in the name for the file
-            if (!output_file.exists())
-            {
-                // member file doesn't exist. we will make a new file
-                //System.out.println("generating new file for member report...");
-                // write to the file only the initial part -- maybe there is a better way but this currently works
-                FileWriter fw = new FileWriter(file_name, true);
-                BufferedWriter bw = new BufferedWriter(fw);
-                bw.write(initial_details);
-                bw.close();
-                fw.close();
-            }
-
-            // open another writer to write only the service information part
-            FileWriter fw = new FileWriter(file_name, true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(service_details);
-            bw.newLine();
-            bw.close();
-            fw.close();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-    */
 
     // for one service, writes the service to the member report file.
     // if the file does not yet exist, appends initial details at the start.
@@ -555,7 +494,7 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "cs314");
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "bltop", "Tortle17!");
             stmt = conn.createStatement();
             return true;
         }
