@@ -231,10 +231,13 @@ public class myjdbc {
     {
         String date = String.valueOf(LocalDate.now());
         String file_name = "EFT-"+date;
-        String initial_details = "Start date: " + LocalDate.now().minusDays(7)+"\n"
-                + "End date: " + LocalDate.now() + '\n';
-        String service_details = "provider " + s.provider_name + " with provider id " + s.provider_id
-                + " has fee: " + s.fee + " for service on " + s.date_of_service;
+        String initial_details = "EFT\nStart date: " + LocalDate.now().minusDays(7)+"\n"
+                + "End date: " + LocalDate.now() + "\n\n" +
+                String.format("%-15s %-10s %-6s %s\n", "Provider", "Id", "Fee", "DOS");
+//        String service_details = "provider " + s.provider_name + " with provider id " + s.provider_id
+//                + " has fee: " + s.fee + " for service on " + s.date_of_service;
+        String service_details = String.format("%-15s %-10s %-6.2f %s", s.provider_name, s.provider_id, s.fee,
+                s.date_of_service);
         File_Manage.write_to_file(file_name, service_details, initial_details);
     }
 
