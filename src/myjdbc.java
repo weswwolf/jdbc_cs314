@@ -162,6 +162,7 @@ public class myjdbc {
 
     // for one service, writes the service to the member report file.
     // if the file does not yet exist, appends initial details at the start.
+    //TODO move into File_Manage class (be careful! TEST)
     static void member_report(String prov_name, String dos, String serv_name, String mem_id)
     {
         Member m = new Member();
@@ -181,13 +182,17 @@ public class myjdbc {
         // check whether the member has an existing file (current directory)
         // if they don't then we need to append the member information at the start.
         // it is convenient to use the members name as their file name, as long as no two members have the exact same name.
-        String service_details = serv_name + " was done with provider " + prov_name + " on date " + dos;
+        //String service_details = serv_name + " was done with provider " + prov_name + " on date " + dos;
         String initial_details = "Record of Service for " + m.name +
                                  "\nMember Number: " + mem_id +
-                                 "\nAddress: " + m.combined_address() + '\n';
+                                 "\nAddress: " + m.combined_address() + '\n'
+                + String.format("\n%-20s %-15s %s\n", "Service", "Provider", "Date");
+        String service_details = String.format("%-20s %-15s %s", serv_name, prov_name, dos);
         // write to file the details of service and optionally the initial details
         File_Manage.write_to_file(file_name, service_details, initial_details);
     }
+
+    //TODO move into File_Manage class (be careful! TEST)
     static void provider_report(Member n, Service s, Provider p)
     {
         String file_name = p.name.replaceAll("\\s", "").concat("-"+p.provider_id);
@@ -195,11 +200,15 @@ public class myjdbc {
         // check whether the member has an existing file (current directory)
         // if they don't then we need to append the member information at the start.
         // it is convenient to use the members name as their file name, as long as no two members have the exact same name.
-        String service_details = s.code + " was completed with patient " + n.name + " (" + n.member_id + ") on date " +
-                s.date_of_service + " entered into computer at " + s.current_date_time + " with fee charge of " + s.fee;
+        //String service_details = s.code + " was completed with patient " + n.name + " (" + n.member_id + ") on date " +
+               // s.date_of_service + " entered into computer at " + s.current_date_time + " with fee charge of " + s.fee;
+        String service_details = String.format("%-7s %-20s %-10s %-12s %-20s %-8.2f", s.code, n.name, n.member_id,
+        s.date_of_service.toString(), s.current_date_time, s.fee);
         String initial_details = "Record of Service for " + p.name +
                 "\nProvider Number: " + p.provider_id +
-                "\nAddress: " + p.combined_address() + '\n';
+                "\nAddress: " + p.combined_address() + '\n'
+                + String.format("\n%-7s %-20s %-10s %-12s %-20s %s\n", "Code", "Patient Name", "Id", "DOS",
+                "Received", "Fee");
         // write to file the details of service and optionally the initial details
         File_Manage.write_to_file(file_name, service_details, initial_details);
     }
@@ -210,7 +219,8 @@ public class myjdbc {
         // check whether the member has an existing file (current directory)
         // if they don't then we need to append the member information at the start.
         // it is convenient to use the members name as their file name, as long as no two members have the exact same name.
-        String service_details = "Total Consultations: " + num_consults + "\tTotal Fees: " + total_fee;
+        String service_details = String.format("\n%-10s %s\n", "Consults", "Total Fees")
+            + String.format("%-10d %-8.2f", num_consults, total_fee);
         String initial_details = "";
         // write to file the details of service and optionally the initial details
         File_Manage.write_to_file(file_name, service_details, initial_details);
@@ -250,6 +260,8 @@ public class myjdbc {
         Provider p = new Provider();
         Member m = new Member();
         Service s = new Service();
+        int total_consults = 0;
+        float all_total_fees = 0.0F;
         boolean found;
         Provider[] arr_prov = new Provider[100];
         for (int i = 0; i < 20; i++)
@@ -270,6 +282,7 @@ public class myjdbc {
                 s.member_id = rs.getString("member_id"); // primary key for member
                 s.provider_id = rs.getString("provider_id"); // primary key for provider
                 s.date_of_service = rs.getDate("service-date").toLocalDate();
+                s.current_date_time = rs.getTimestamp("current-date-time").toLocalDateTime();
                 // fill out a service object using the service code.
                 if (!fill_service_data(s.code,s))
                 {
@@ -339,9 +352,13 @@ public class myjdbc {
         }
         for (int i = 0; i < size; i++)
         {
+            //TODO move append_provider_report to File_Manage Class
             append_provider_report(arr_prov[i], arr_prov[i].consultations, arr_prov[i].total_fee);
-            //System.out.println(arr_prov[i].name);
+            File_Manage.append_summary_report(arr_prov[i]);
+            total_consults += arr_prov[i].consultations;
+            all_total_fees += arr_prov[i].total_fee;
         }
+        File_Manage.final_append_summary(size, total_consults, all_total_fees);
         // end weekly_function
     }
 
@@ -494,7 +511,7 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "bltop", "Tortle17!");
+            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "cs314");
             stmt = conn.createStatement();
             return true;
         }

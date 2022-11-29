@@ -1,6 +1,7 @@
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 /* Functions
@@ -31,13 +32,17 @@ public class File_Manage
             String file_name = member.name.replaceAll("\\s", "").concat("-" + member.member_id);
             File_Manage.delete_file(file_name);
         }
-//        String file_name = n.name.replaceAll("\\s", "").concat("-" + mem_id);
         for (Provider provider : p)
         {
             String file_name = provider.name.replaceAll("\\s", "").concat("-" + provider.provider_id);
             File_Manage.delete_file(file_name);
         }
-//        File_Manage.delete_file(file_name);
+        //delete EFT file
+        String file_name = ("EFT-").concat(LocalDate.now().toString());
+        File_Manage.delete_file(file_name);
+        //delete Summary Report file
+        file_name = "Summary-Report-".concat(LocalDate.now().toString());
+        File_Manage.delete_file(file_name);
     }
 
     static void write_to_file(String file_name, String service_details, String initial_details)
@@ -69,5 +74,25 @@ public class File_Manage
         {
             e.printStackTrace();
         }
+    }
+
+    //TODO use the formatting in this function as a model to reformat other files
+    static void append_summary_report(Provider p)
+    {
+        String file_name = "Summary-Report-".concat(LocalDate.now().toString());
+        String start_details = "Summary Report\n\n" + String.format("%-20s %-15s %s\n", "Name", "Consults", "Total");
+        String details = String.format("%-20s %-15s %-8.2f", p.name, p.consultations, p.total_fee);
+        //System.out.println();
+        write_to_file(file_name, details, start_details);
+    }
+
+    static void final_append_summary(int num_prov, int num_consults, float total)
+    {
+        String file_name = "Summary-Report-".concat(LocalDate.now().toString());
+        String start_details = "";
+        String details = String.format("\n\n%-20s %-15s %s\n", "Total Providers", "Total Consults", "Total Fees") +
+                String.format("%-20d %-15d %-8.2f", num_prov, num_consults, total);
+        //System.out.println();
+        write_to_file(file_name, details, start_details);
     }
 }
