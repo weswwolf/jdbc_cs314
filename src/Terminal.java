@@ -1,5 +1,6 @@
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Terminal
@@ -154,18 +155,25 @@ public class Terminal
     public int menu_selection()
     {
         int selection;
-        System.out.print("Terminal Menu\n\n");
-        System.out.println("1 - View Service Directory");
-        System.out.println("2 - Validate a Member");
-        System.out.println("3 - Bill a Member");
-        System.out.println("4 - Individual Member Report");
-        System.out.println("5 - Individual Provider Report");
-        System.out.println("6 - Run Weekly Report");
+        try {
+            System.out.print("Terminal Menu\n\n");
+            System.out.println("1 - View Service Directory");
+            System.out.println("2 - Validate a Member");
+            System.out.println("3 - Bill a Member");
+            System.out.println("4 - Individual Member Report");
+            System.out.println("5 - Individual Provider Report");
+            System.out.println("6 - Run Weekly Report");
+            System.out.println("9 - LOGOUT");
 
-        System.out.println("9 - LOGOUT");
+            selection = input.nextInt();
+            input.next();
+        }
 
-        selection = input.nextInt();
-
+        catch(InputMismatchException inputMismatchException) {
+            System.err.println("Not an integer. Please try again.");
+            input.nextLine();
+            selection = 0;
+        }
         return selection;
     }
 
