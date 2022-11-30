@@ -56,6 +56,7 @@ public class Terminal
     public void bill_a_member(String prov_id, String mem_id)
     {
         int returned = 1;
+        char check;
         String dos;
         String s_code;
         char flag;
@@ -88,17 +89,28 @@ public class Terminal
         } while (returned != 0);
         do
         {
-            System.out.print("Enter Service Code: ");
-            s_code = input.next();
-            returned = myjdbc.validate_service_code(s_code);
+            do {
+                System.out.print("Enter Service Code: ");
+                s_code = input.next();
+                returned = myjdbc.validate_service_code(s_code);
 
-            if (returned == 1)
-                System.out.println("Database Problem");
-            else if (returned == 2)
-                System.out.println("Service code not found");
-        } while (returned != 0);
+                if (returned == 1)
+                    System.out.println("Database Problem");
+                else if (returned == 2)
+                    System.out.println("Service code not found");
+            } while (returned != 0);
 
-        System.out.println("Service code accepted");
+            System.out.println("Service code accepted");
+            //TODO Output name of service here
+            do {
+                System.out.print("Is this the correct service? (Y or N) ");
+                check = input.next().charAt(0);
+                if(check != 'y' && check != 'Y' && check != 'N' && check != 'n') {
+                    System.out.print("Not a valid answer, please try again.");
+                }
+            } while(check != 'y' && check != 'n' && check != 'N' && check !='Y');
+        } while (check != 'y' && check != 'Y');
+
         System.out.println("Enter Comments? (Y or N): ");
         flag = input.next().charAt(0);
         if (flag == 'Y' || flag == 'y')
@@ -166,7 +178,7 @@ public class Terminal
             System.out.println("9 - LOGOUT");
 
             selection = input.nextInt();
-            input.next();
+            input.nextLine();
         }
 
         catch(InputMismatchException inputMismatchException) {
