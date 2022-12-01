@@ -61,6 +61,7 @@ public class Terminal
         String s_code;
         char flag;
         String comments;
+        Service service = new Service();
 
         Service new_service = new Service();
 
@@ -100,8 +101,8 @@ public class Terminal
                     System.out.println("Service code not found");
             } while (returned != 0);
 
-            System.out.println("Service code accepted");
-            //TODO Output name of service here
+            myjdbc.fill_service_data(s_code, service);
+            System.out.println(service.name);
             do {
                 System.out.print("Is this the correct service? (Y or N) ");
                 check = input.next().charAt(0);
@@ -110,7 +111,7 @@ public class Terminal
                 }
             } while(check != 'y' && check != 'n' && check != 'N' && check !='Y');
         } while (check != 'y' && check != 'Y');
-
+        System.out.println("Service code accepted");
         System.out.println("Enter Comments? (Y or N): ");
         flag = input.next().charAt(0);
         if (flag == 'Y' || flag == 'y')
