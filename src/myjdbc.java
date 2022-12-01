@@ -186,8 +186,8 @@ public class myjdbc {
         String initial_details = "Record of Service for " + m.name +
                                  "\nMember Number: " + mem_id +
                                  "\nAddress: " + m.combined_address() + '\n'
-                + String.format("\n%-20s %-15s %s\n", "Service", "Provider", "Date");
-        String service_details = String.format("%-20s %-15s %s", serv_name, prov_name, dos);
+                + String.format("\n%-24s %-15s %s\n", "Service", "Provider", "Date");
+        String service_details = String.format("%-24s %-15s %s", serv_name, prov_name, dos);
         // write to file the details of service and optionally the initial details
         File_Manage.write_to_file(file_name, service_details, initial_details);
     }

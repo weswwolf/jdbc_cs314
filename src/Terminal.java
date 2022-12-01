@@ -87,6 +87,7 @@ public class Terminal
                 System.out.println("Invalid Date/Format (yyyy-mm-dd)");
                 returned = 1;
             }
+            view_service_directory();
         } while (returned != 0);
         do
         {
@@ -126,6 +127,7 @@ public class Terminal
             new_service.set_insert_service(prov_id, mem_id, LocalDate.parse(dos), " ", s_code);
         }
         returned = myjdbc.insert_service_record(new_service);
+        System.out.println(String.format("Fee: $%-6.2f", service.fee));
 
         if (returned == 1)
             System.out.println("There was a problem with billing the member, please try again");
