@@ -61,6 +61,7 @@ public class Terminal
         String s_code;
         char flag;
         String comments;
+        Service service = new Service();
 
         Service new_service = new Service();
 
@@ -100,8 +101,8 @@ public class Terminal
                     System.out.println("Service code not found");
             } while (returned != 0);
 
-            System.out.println("Service code accepted");
-            //TODO Output name of service here
+            myjdbc.fill_service_data(s_code, service);
+            System.out.println(service.name);
             do {
                 System.out.print("Is this the correct service? (Y or N) ");
                 check = input.next().charAt(0);
@@ -110,7 +111,7 @@ public class Terminal
                 }
             } while(check != 'y' && check != 'n' && check != 'N' && check !='Y');
         } while (check != 'y' && check != 'Y');
-
+        System.out.println("Service code accepted");
         System.out.println("Enter Comments? (Y or N): ");
         flag = input.next().charAt(0);
         if (flag == 'Y' || flag == 'y')
@@ -132,9 +133,8 @@ public class Terminal
             System.out.println("Member Successfully Billed");
     }
 
-    //TODO should handle cases 5 and 6, need to add
     //function that handles the user selection from the menu_selection
-    public void handle_menu_selection(int selection, String prov_id, String mem_id)
+    public void handle_provider_menu_selection(int selection, String prov_id, String mem_id)
     {
         switch(selection)
         {
@@ -149,13 +149,23 @@ public class Terminal
             case 3:
                 bill_a_member(prov_id, mem_id);
                 break;
-            case 4:
+            default:
+                break;
+        }
+    }
+
+    //function that handles the user selection from the manager menu_selection
+    public void handle_manager_menu_selection(int selection, String prov_id, String mem_id)
+    {
+        switch(selection)
+        {
+            case 1:
                 individual_member_report();
                 break;
-            case 5:
+            case 2:
                 individual_provider_report();
                 break;
-            case 6:
+            case 3:
                 myjdbc.weekly_services();
                 break;
             default:
@@ -163,18 +173,59 @@ public class Terminal
         }
     }
 
-    //main user interface of the terminal
-    public int menu_selection()
+    //main menu
+    public int main_menu()
     {
         int selection;
         try {
             System.out.print("Terminal Menu\n\n");
+            System.out.println("1 - Provider Terminal");
+            System.out.println("2 - Manager Terminal");
+
+            selection = input.nextInt();
+            input.nextLine();
+        }
+
+        catch(InputMismatchException inputMismatchException) {
+            System.err.println("Not an integer. Please try again.");
+            input.nextLine();
+            selection = 0;
+        }
+        return selection;
+    }
+
+    //main user interface of the provider terminal
+    public int provider_menu_selection()
+    {
+        int selection;
+        try {
+            System.out.print("Provider Menu\n\n");
             System.out.println("1 - View Service Directory");
             System.out.println("2 - Validate a Member");
             System.out.println("3 - Bill a Member");
-            System.out.println("4 - Individual Member Report");
-            System.out.println("5 - Individual Provider Report");
-            System.out.println("6 - Run Weekly Report");
+            System.out.println("9 - LOGOUT");
+
+            selection = input.nextInt();
+            input.nextLine();
+        }
+
+        catch(InputMismatchException inputMismatchException) {
+            System.err.println("Not an integer. Please try again.");
+            input.nextLine();
+            selection = 0;
+        }
+        return selection;
+    }
+
+    //main user interface of the manager terminal
+    public int manager_menu_selection()
+    {
+        int selection;
+        try {
+            System.out.print("Manager Menu\n\n");
+            System.out.println("1 - Individual Member Report");
+            System.out.println("2 - Individual Provider Report");
+            System.out.println("3 - Run Weekly Report");
             System.out.println("9 - LOGOUT");
 
             selection = input.nextInt();
@@ -246,28 +297,36 @@ public class Terminal
         //loads the service directory from database to terminal
         directory = myjdbc.get_service_directory();
         int validation = -1;
-        int selection = 0;
+        int selection;
+        selection = main_terminal.main_menu();
         Provider logged_in = new Provider();
         String prov_id = null;
         String mem_id = null;
-
-        while (validation != 0)
+        if (selection == 1)
         {
-            System.out.println("Enter Provider Id: ");
-            prov_id = input.next();
-            validation = main_terminal.verify_provider(prov_id);
-            main_terminal.login_handle(validation);
-            if (validation == 0)
-            {
-                logged_in.provider_id = prov_id;
+            while (validation != 0) {
+                System.out.println("Enter Provider Id: ");
+                prov_id = input.next();
+                validation = main_terminal.verify_provider(prov_id);
+                main_terminal.login_handle(validation);
+                if (validation == 0) {
+                    logged_in.provider_id = prov_id;
+                }
             }
+            while (selection != 9) {
+                selection = main_terminal.provider_menu_selection();
+                main_terminal.handle_provider_menu_selection(selection, prov_id, mem_id);
+            }
+            System.out.println("\nGOODBYE");
         }
-        while (selection != 9)
+        if (selection == 2)
         {
-            selection = main_terminal.menu_selection();
-            main_terminal.handle_menu_selection(selection, prov_id, mem_id);
+            while (selection != 9) {
+                selection = main_terminal.manager_menu_selection();
+                main_terminal.handle_manager_menu_selection(selection, prov_id, mem_id);
+            }
+            System.out.println("\nGOODBYE");
         }
-        System.out.println("\nGOODBYE");
 
     }
 }
