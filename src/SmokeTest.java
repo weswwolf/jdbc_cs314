@@ -40,7 +40,7 @@ class SmokeTest {
         File rpt;
         myjdbc.connect_to_database();
         Provider prov = new Provider();
-        String prov_id = null;
+        String prov_id;
         Statement stmt = myjdbc.conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
         while(rs.next()){
