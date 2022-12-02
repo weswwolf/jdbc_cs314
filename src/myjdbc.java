@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 
-
 /*
 Connection -- a session with a specific database
 Statement -- an object used for executing a static SQL statement and returning the results
@@ -515,9 +514,7 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection(
-                    "jdbc:mysql://chocan.ch0sbhycvlck.us-west-2.rds.amazonaws.com:3306/chocan","admin","cs314ChocAn");
-            //conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "cs314");
+            conn = DriverManager.getConnection("jdbc:mysql://chocan.ch0sbhycvlck.us-west-2.rds.amazonaws.com:3306/chocan","admin","cs314ChocAn");
             stmt = conn.createStatement();
             return true;
         }
