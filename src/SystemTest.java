@@ -1,3 +1,9 @@
+/****
+ * These classes are not part of the requirements, but we had already started work on them prior to learning that.
+ *
+ ****/
+
+
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -26,14 +32,4 @@ class SystemTest {
         assertEquals(3, myjdbc.validate_member("20"));
     }
 
-    //TODO Test EFT how? Might need custom tests not involving assertions
-    @Test
-    void generate_eft(){
-        System.out.println("DUMMY");
-    }
-
-    @Test
-    void write_individual_reports(){
-        System.out.println("DUMMY");
-    }
 }

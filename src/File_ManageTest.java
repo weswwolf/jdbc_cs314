@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 /*
@@ -42,5 +43,12 @@ class File_ManageTest {
         // assert that the actual output to the file is the same as expected
         // by reading the file text into a string and comparing it to the expected output.
         // make sure to destroy the file if it already exists, or it will not match correctly.
+    }
+
+    @Test
+    void append_summary_report(){
+        //Assert that append_summary_report() does not allow writing bad provider data:
+        Provider p = null;
+        assertEquals(1, File_Manage.append_summary_report(p));
     }
 }

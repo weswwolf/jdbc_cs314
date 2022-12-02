@@ -77,13 +77,17 @@ public class File_Manage
     }
 
     //TODO use the formatting in this function as a model to reformat other files
-    static void append_summary_report(Provider p)
+    static int append_summary_report(Provider p)
     {
+        if(p == null || p.name == null){
+            return 1;
+        }
         String file_name = "Summary-Report-".concat(LocalDate.now().toString());
         String start_details = "Summary Report\n\n" + String.format("%-20s %-15s %s\n", "Name", "Consults", "Total");
         String details = String.format("%-20s %-15s %-8.2f", p.name, p.consultations, p.total_fee);
         //System.out.println();
         write_to_file(file_name, details, start_details);
+        return 0;
     }
 
     static void final_append_summary(int num_prov, int num_consults, float total)
