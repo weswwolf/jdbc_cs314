@@ -179,20 +179,25 @@ public class Terminal
     public int main_menu()
     {
         int selection;
-        try {
-            System.out.print("Terminal Menu\n\n");
-            System.out.println("1 - Provider Terminal");
-            System.out.println("2 - Manager Terminal");
+        do {
+            try {
+                System.out.print("Terminal Menu\n\n");
+                System.out.println("1 - Provider Terminal");
+                System.out.println("2 - Manager Terminal");
+                System.out.println("9 - LOGOUT");
 
-            selection = input.nextInt();
-            input.nextLine();
-        }
+                selection = input.nextInt();
+                input.nextLine();
+            } catch (InputMismatchException inputMismatchException) {
+                System.err.println("Not an integer. Please try again.");
+                input.nextLine();
+                selection = 0;
+            }
 
-        catch(InputMismatchException inputMismatchException) {
-            System.err.println("Not an integer. Please try again.");
-            input.nextLine();
-            selection = 0;
-        }
+            if(selection != 1 && selection != 2 && selection != 9) {
+                System.err.println("Please enter a valid option.");
+            }
+        }while(selection != 1 && selection != 2 && selection !=9);
         return selection;
     }
 

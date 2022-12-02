@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 
+
 /*
 Connection -- a session with a specific database
 Statement -- an object used for executing a static SQL statement and returning the results
@@ -392,7 +393,7 @@ public class myjdbc {
         {
 
             // this is the query to insert a service record into the database
-            String query = "INSERT INTO `ChocAn`.`Weekly Service Record` (`service_number`, `current-date-time`, `service-date`, `provider_id`, `member_id`, `service_code`, `comments`)  " +
+            String query = "INSERT INTO `chocan`.`Weekly Service Record` (`service_number`, `current-date-time`, `service-date`, `provider_id`, `member_id`, `service_code`, `comments`)  " +
                     //"VALUES ('" +String.valueOf(service_number)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
                     //"VALUES ('" + userPreferences.getInt("service_number", 0)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
                     "VALUES ('" + get_next_service_number()+"', '"+ LocalDateTime.now()+"', '"+s.date_of_service+"', '"+s.provider_id+"', '"+s.member_id+"', '"+s.code+"', '" +s.comments +"');";
@@ -514,7 +515,9 @@ public class myjdbc {
         try // initialize connection to database
         {
             // enter ip address of server and user/password
-            conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "cs314");
+            conn = DriverManager.getConnection(
+                    "jdbc:mysql://chocan.ch0sbhycvlck.us-west-2.rds.amazonaws.com:3306/chocan","admin","cs314ChocAn");
+            //conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/ChocAn", "root", "cs314");
             stmt = conn.createStatement();
             return true;
         }
@@ -530,7 +533,7 @@ public class myjdbc {
         boolean exist;
         try
         {
-            rs = stmt.executeQuery("select * from `service directory` where service_code=" + to_validate);
+            rs = stmt.executeQuery("select * from `Service Directory` where service_code=" + to_validate);
             exist = rs.next();
         }
         catch (Exception e)
