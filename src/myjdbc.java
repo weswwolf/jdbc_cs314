@@ -162,7 +162,7 @@ public class myjdbc {
 
     // for one service, writes the service to the member report file.
     // if the file does not yet exist, appends initial details at the start.
-    //TODO move into File_Manage class (be careful! TEST)
+    //potentially move into File_Manage class (be careful! TEST)
     static void member_report(String prov_name, String dos, String serv_name, String mem_id)
     {
         Member m = new Member();
@@ -192,7 +192,7 @@ public class myjdbc {
         File_Manage.write_to_file(file_name, service_details, initial_details);
     }
 
-    //TODO move into File_Manage class (be careful! TEST)
+    //potentially move into File_Manage class (be careful! TEST)
     static void provider_report(Member n, Service s, Provider p)
     {
         String file_name = p.name.replaceAll("\\s", "").concat("-"+p.provider_id);
@@ -256,7 +256,7 @@ public class myjdbc {
     */
 
     // function to read Weekly Services Record table one at a time to do the main accounting procedure, EFT, and summary report
-    //TODO eventually refactor static provider array to a dynamic method
+    //potentially eventually refactor static provider array to a dynamic method
     static void weekly_services()
     {
         File_Manage.delete_all_files();
@@ -355,7 +355,7 @@ public class myjdbc {
         }
         for (int i = 0; i < size; i++)
         {
-            //TODO move append_provider_report to File_Manage Class
+            //potentially move append_provider_report to File_Manage Class
             append_provider_report(arr_prov[i], arr_prov[i].consultations, arr_prov[i].total_fee);
             File_Manage.append_summary_report(arr_prov[i]);
             total_consults += arr_prov[i].consultations;

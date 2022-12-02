@@ -10,8 +10,8 @@ class TerminalTest {
     @Test
     void verify_provider()
     {
-        String good_prov_id = "112233445";
-        String bad_prov_id = "000000000";
+        String good_prov_id = "000000000";
+        String bad_prov_id = "112233445";
         //testing for database connection error
         assertEquals(1, myjdbc.validate_provider(good_prov_id), "expected connection error, failed");
         myjdbc.connect_to_database();
