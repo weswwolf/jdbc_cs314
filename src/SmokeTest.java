@@ -34,29 +34,6 @@ class SmokeTest {
         assertEquals(init_count, final_count - 3);
     }
 
-    //TODO: Tries to create report for every member, should only create report for members who received service that week:
-    @Test
-    void write_member_reports() throws SQLException {
-        //mem_name-memid
-        File myfile;
-        Member memb = new Member();
-        //Get all member IDs of members that have had services this week.
-        String mem_id = null;
-        myjdbc.connect_to_database();
-        String query = "select * from Members";
-        Statement stmt = myjdbc.conn.createStatement();
-        ResultSet rs = stmt.executeQuery(query);
-        //Then Run get individual member report for each member
-        while(rs.next()){
-            mem_id = rs.getString("id");
-            myjdbc.generate_individual_member_report(mem_id);
-            myjdbc.fill_member_data(mem_id, memb);
-            myfile = new File(memb.name.replaceAll( " ", "") + "-" + mem_id);
-            assertTrue(myfile.exists());
-        }
-    }
-
-    //TODO: Same as above:
     @Test
     void write_provider_reports() throws SQLException {
         String query = "select * from Providers";

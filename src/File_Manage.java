@@ -76,7 +76,6 @@ public class File_Manage
         }
     }
 
-    //TODO use the formatting in this function as a model to reformat other files
     static int append_summary_report(Provider p)
     {
         if(p == null || p.name == null){
