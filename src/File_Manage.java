@@ -4,12 +4,6 @@ import java.io.FileWriter;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-/* Functions
-    static void delete_file(String to_delete)
-    static void delete_all_files()
-    static void write_to_file(String file_name, String service_details, String initial_details)
-*/
-
 public class File_Manage
 {
     public static void delete_file(String to_delete)
@@ -53,7 +47,6 @@ public class File_Manage
             if (!output_file.exists())
             {
                 // member file doesn't exist. we will make a new file
-                //System.out.println("generating new file for member report...");
                 // write to the file only the initial part -- maybe there is a better way but this currently works
                 FileWriter fw = new FileWriter(file_name, true);
                 BufferedWriter bw = new BufferedWriter(fw);
@@ -84,7 +77,6 @@ public class File_Manage
         String file_name = "Summary-Report-".concat(LocalDate.now().toString());
         String start_details = "Summary Report\n\n" + String.format("%-20s %-15s %s\n", "Name", "Consults", "Total");
         String details = String.format("%-20s %-15s %-8.2f", p.name, p.consultations, p.total_fee);
-        //System.out.println();
         write_to_file(file_name, details, start_details);
         return 0;
     }
@@ -95,7 +87,6 @@ public class File_Manage
         String start_details = "";
         String details = String.format("\n\n%-20s %-15s %s\n", "Total Providers", "Total Consults", "Total Fees") +
                 String.format("%-20d %-15d %-8.2f", num_prov, num_consults, total);
-        //System.out.println();
         write_to_file(file_name, details, start_details);
     }
 }
