@@ -146,7 +146,7 @@ public class myjdbc {
             if (serv_search.next())
             {
                 s.name = serv_search.getString("service_name");
-                s.fee = serv_search.getFloat("service_fee"); // reference value is not changed
+                s.fee = serv_search.getFloat("service_fee");
                 serv_stmt.close();
                 return true;
             }
@@ -154,7 +154,7 @@ public class myjdbc {
         }
         catch (Exception e)
         {
-            //e.printStackTrace();
+            //do nothing
         }
         return false;
     }
@@ -162,27 +162,21 @@ public class myjdbc {
 
     // for one service, writes the service to the member report file.
     // if the file does not yet exist, appends initial details at the start.
-    //TODO move into File_Manage class (be careful! TEST)
     static void member_report(String prov_name, String dos, String serv_name, String mem_id)
     {
         Member m = new Member();
         // write to a file that may already exist, details of the service.
         // lookup the member with the associated member id for their personal details (name, address)
-        //String[] member_info = fill_member_data(mem_id);
         if (!fill_member_data(mem_id, m))
         {
             System.out.println("error in filling member data. exiting member report for mem_id" + mem_id);
             return;
         }
-        //String member_name = member_info[0]; // alias for easy reading below
-
 
         String file_name = m.name.replaceAll("\\s", "").concat("-"+mem_id);
-        // member_info[1] == address, city, state, zip
         // check whether the member has an existing file (current directory)
         // if they don't then we need to append the member information at the start.
         // it is convenient to use the members name as their file name, as long as no two members have the exact same name.
-        //String service_details = serv_name + " was done with provider " + prov_name + " on date " + dos;
         String initial_details = "Record of Service for " + m.name +
                                  "\nMember Number: " + mem_id +
                                  "\nAddress: " + m.combined_address() + '\n'
@@ -192,16 +186,12 @@ public class myjdbc {
         File_Manage.write_to_file(file_name, service_details, initial_details);
     }
 
-    //TODO move into File_Manage class (be careful! TEST)
     static void provider_report(Member n, Service s, Provider p)
     {
         String file_name = p.name.replaceAll("\\s", "").concat("-"+p.provider_id);
-        // member_info[1] == address, city, state, zip
         // check whether the member has an existing file (current directory)
         // if they don't then we need to append the member information at the start.
         // it is convenient to use the members name as their file name, as long as no two members have the exact same name.
-        //String service_details = s.code + " was completed with patient " + n.name + " (" + n.member_id + ") on date " +
-               // s.date_of_service + " entered into computer at " + s.current_date_time + " with fee charge of " + s.fee;
         String service_details = String.format("%-7s %-20s %-10s %-12s %-20s %-8.2f", s.code, n.name, n.member_id,
         s.date_of_service.toString(), s.current_date_time, s.fee);
         String initial_details = "Record of Service for " + p.name +
@@ -215,7 +205,6 @@ public class myjdbc {
     static void append_provider_report(Provider p, int num_consults, float total_fee)
     {
         String file_name = p.name.replaceAll("\\s", "").concat("-"+p.provider_id);
-        // member_info[1] == address, city, state, zip
         // check whether the member has an existing file (current directory)
         // if they don't then we need to append the member information at the start.
         // it is convenient to use the members name as their file name, as long as no two members have the exact same name.
@@ -234,29 +223,13 @@ public class myjdbc {
         String initial_details = "EFT\nStart date: " + LocalDate.now().minusDays(7)+"\n"
                 + "End date: " + LocalDate.now() + "\n\n" +
                 String.format("%-15s %-10s %-6s %s\n", "Provider", "Id", "Fee", "DOS");
-//        String service_details = "provider " + s.provider_name + " with provider id " + s.provider_id
-//                + " has fee: " + s.fee + " for service on " + s.date_of_service;
         String service_details = String.format("%-15s %-10s %-6.2f %s", s.provider_name, s.provider_id, s.fee,
                 s.date_of_service);
         File_Manage.write_to_file(file_name, service_details, initial_details);
     }
 
-    /* DEPRECATED, see REFACTORED above
-    // append the given argument information to the eft. if the eft does not yet exist, append the initial information.
-    public static void append_eft(String prov_name, String pro_id, String dos, float provider_fee)
-    {
-        String date = String.valueOf(LocalDate.now());
-        String file_name = "EFT-"+date;
-        String initial_details = "Start date: " + LocalDate.now().minusDays(7)+"\n"
-                + "End date: " + LocalDate.now() + '\n';
-        String service_details = "provider " + prov_name + " with provider id " + pro_id
-                + " has fee: " + provider_fee + " for service on " + dos;
-        File_Manage.write_to_file(file_name, service_details, initial_details);
-    }
-    */
-
     // function to read Weekly Services Record table one at a time to do the main accounting procedure, EFT, and summary report
-    //TODO eventually refactor static provider array to a dynamic method
+    //potentially eventually refactor static provider array to a dynamic method
     static void weekly_services()
     {
         File_Manage.delete_all_files();
@@ -280,7 +253,6 @@ public class myjdbc {
                 // these variables are good for looking up info in other tables
                 // get the date of service, provider name, and service name in preparation for appending to file
                 s.number = rs.getInt("service_number"); // primary key for service
-                //String srv_code = rs.getString("service_code");
                 s.code = rs.getString("service_code");
                 s.member_id = rs.getString("member_id"); // primary key for member
                 s.provider_id = rs.getString("provider_id"); // primary key for provider
@@ -304,18 +276,6 @@ public class myjdbc {
                 // then write to file about the service details
                 member_report(p.name, String.valueOf(s.date_of_service), s.name, s.member_id);
 
-                // do the same for the provider, but with slightly different information (look at member report for inspiration)
-                {   // PROVIDER REPORT -- for the same service
-                    // append to the provider file with the information:
-                    // -current date/time
-                    // -date of service
-                    // -member name
-                    // -member number
-                    // -service code
-                    // -fee to be paid
-                    // add to the total consultations
-                    // add the fee to the total provider fees.
-                }
                 myjdbc.fill_member_data(s.member_id, m);
                 provider_report(m, s, p);
 
@@ -341,7 +301,6 @@ public class myjdbc {
 
 
                 // EFT
-                //append_eft(p.name, p.provider_id, String.valueOf(s.date_of_service), s.fee);
                 append_eft(s);
                 {   // SUMMARY REPORT
                     // lists providers and total fees
@@ -355,7 +314,7 @@ public class myjdbc {
         }
         for (int i = 0; i < size; i++)
         {
-            //TODO move append_provider_report to File_Manage Class
+            //potentially move append_provider_report to File_Manage Class
             append_provider_report(arr_prov[i], arr_prov[i].consultations, arr_prov[i].total_fee);
             File_Manage.append_summary_report(arr_prov[i]);
             total_consults += arr_prov[i].consultations;
@@ -393,11 +352,8 @@ public class myjdbc {
 
             // this is the query to insert a service record into the database
             String query = "INSERT INTO `chocan`.`Weekly Service Record` (`service_number`, `current-date-time`, `service-date`, `provider_id`, `member_id`, `service_code`, `comments`)  " +
-                    //"VALUES ('" +String.valueOf(service_number)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
-                    //"VALUES ('" + userPreferences.getInt("service_number", 0)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
                     "VALUES ('" + get_next_service_number()+"', '"+ LocalDateTime.now()+"', '"+s.date_of_service+"', '"+s.provider_id+"', '"+s.member_id+"', '"+s.code+"', '" +s.comments +"');";
             // instead of doing a query, we are doing an update because we are updating a value in the database.
-            //rs = stmt.executeQuery(query);
             stmt.executeUpdate(query);
         }
         catch (Exception e)
@@ -408,40 +364,7 @@ public class myjdbc {
         return 0; // success
     }
 
-    
-    // this should be refactored so that it takes only a service as argument
-    // takes the information for one service as argument, and inserts it into the weekly service record.
-    // returns:
-    //  success = 0
-    //  database issue = 1
-//    public static int insert_service_record(LocalDate service_date, String provider_id, String member_id, String service_code, String comments)
-//    {
-//        try
-//        {
-//
-//            // this is the query to insert a service record into the database
-//            String query = "INSERT INTO `ChocAn`.`Weekly Service Record` (`service_number`, `current-date-time`, `service-date`, `provider_id`, `member_id`, `service_code`, `comments`)  " +
-//                    //"VALUES ('" +String.valueOf(service_number)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
-//                    //"VALUES ('" + userPreferences.getInt("service_number", 0)+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
-//                    "VALUES ('" + get_next_service_number()+"', '"+ LocalDateTime.now()+"', '"+service_date+"', '"+provider_id+"', '"+member_id+"', '"+service_code+"', '" +comments +"');";
-//                    // instead of doing a query, we are doing an update because we are updating a value in the database.
-//            //rs = stmt.executeQuery(query);
-//            stmt.executeUpdate(query);
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//            return 1; // problem with query
-//        }
-//        return 0; // success
-//    }
 
-    /* try to validate a provider by querying the database with the provider's id.
-        return:
-        provider validated = 0
-        invalid provider id = 2
-        database issue = 1
-     */
     public static int validate_provider(String p_id)
     {
         boolean exist;
@@ -452,12 +375,10 @@ public class myjdbc {
         }
         catch (Exception e)
         {
-            //e.printStackTrace();
             return 1;
         }
         if (exist)
         {
-            //System.out.println("provider id accepted by database: " + p_id);
             return 0; // success
         }
         else
@@ -483,8 +404,6 @@ public class myjdbc {
         {
             rs = stmt.executeQuery("select * from Members where id=" + m_id);
             first_index_exists = rs.next(); // move to first row
-            //suspended = rs.getInt("suspended");
-            //String member_name = rs.getString("name");
             if (first_index_exists)
             {
                 suspended = rs.getInt("suspended");
@@ -501,7 +420,6 @@ public class myjdbc {
         }
         catch (Exception e)
         {
-            //e.printStackTrace();
             // problem connecting to database!
             return 1;
         }
@@ -535,7 +453,6 @@ public class myjdbc {
         }
         catch (Exception e)
         {
-            //e.printStackTrace();
             //database connection error
             return 1;
         }
@@ -562,7 +479,6 @@ public class myjdbc {
             while (rs.next())
             {
                 Service new_service = new Service();
-                //service_code, service_name, service_desc, service_fee
                 new_service.code = rs.getString("service_code");
                 new_service.name = rs.getString("service_name");
                 new_service.description = rs.getString("service_desc");
@@ -698,15 +614,6 @@ public class myjdbc {
         {
             System.out.println("Access granted to member billing\n");
         }
-        /* example information to input into service table
-        String provider_id = "123456788";
-        String member_id = "123456788";
-        String service_code = "656565";
-        String comments = "example comment";
-        */
-        //insert_service_record(LocalDate.now(), "112233445", "123456789", "101010", "mission complete");
-
-
 
         weekly_services(); // do the main accounting procedure, EFT, and summary report
         // close connection to database

@@ -41,10 +41,10 @@ class myjdbcTest
     void fill_provider_data()
     {
         Provider p = new Provider();
-        String id = "112233445";
+        String id = "111111111";
         myjdbc.connect_to_database();
         myjdbc.fill_provider_data(id, p);
-        assertEquals("Bob", p.name);
+        assertEquals("Bob Barker", p.name);
         assertEquals("1 Birch St", p.address);
         assertEquals("Salem", p.city);
         assertEquals("OR", p.state);
@@ -72,54 +72,12 @@ class myjdbcTest
         assertEquals("no-name", s.name); // default service value not changed
     }
 
-    /* Moved to File_ManageTest.java
-    @Test
-    void write_to_file()
-    {
-        // write to a file that doesn't exist, then make sure that it exists
-        // write_to_file(file_name, append_details, initial_details)
-        String file_name = "junit_test_file_actual";
-        File_Manage.write_to_file(file_name, "add this text only if the file already exists", "Only add this text if the file didn't exist yet\n");
-        File_Manage.write_to_file(file_name, "add this text only if the file already exists", "this text should not be added\n");
-        File actual = new File(file_name); // actual
-        //File expected = new File("junit_test_file_expected");
-        assertTrue(actual.exists());
-        // assert that the actual output to the file is the same as expected
-        // by reading the file text into a string and comparing it to the expected output.
-        // make sure to destroy the file if it already exists, or it will not match correctly.
-    }
-    */
-
-    // UNFILLED TESTS
-    @Test
-    void member_report()
-    {
-
-    }
-
-    @Test
-    void append_eft()
-    {
-    }
-
-    // this function is not finished, yet
-    @Test
-    void weekly_services()
-    {
-    }
-
-    // BEFORE creating this test, REFACTOR the insert_service_record() function to take a Service object as argument.
-    @Test
-    void insert_service_record_good()
-    {
-    }
-
     // VALIDATE PROVIDER
     // a test with valid (happy) provider id
     @Test
     void validate_provider_good()
     {
-        String good_pid = "123456789";
+        String good_pid = "000000000";
         myjdbc.connect_to_database();
         // a valid provider returns 0
         assertEquals(0, myjdbc.validate_provider(good_pid));
