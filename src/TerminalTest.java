@@ -29,4 +29,21 @@ class TerminalTest {
         assertEquals(t.handle_member(1), 1);
     }
 
+    @Test
+    void login_handle(){
+        //Should print Database Error then Invalid Provider then Access Granted:
+        Terminal t = new Terminal();
+        assertEquals(1, t.login_handle(1));
+        assertEquals(2, t.login_handle(2));
+        assertEquals(0, t.login_handle(0));
+        assertEquals(3, t.login_handle(100));
+    }
+
+    @Test
+    void view_service_directory(){
+        //Makes sure that an error is returned if the directory is null/empty:
+        Terminal t = new Terminal();
+        assertEquals(1, t.view_service_directory());
+    }
+
 }

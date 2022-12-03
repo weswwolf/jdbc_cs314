@@ -14,11 +14,15 @@ public class Terminal
     }
 
     //displays the service directory
-    public void view_service_directory()
+    public int view_service_directory()
     {
+        if (directory == null || directory.size() == 0) {
+            return 1;
+        }
         for (Service service : directory) {
             service.print_service();
         }
+        return 0;
     }
 
 
@@ -29,20 +33,24 @@ public class Terminal
     }
 
     //function that handles the return value from validating a provider
-    public void login_handle(int validation)
+    public int login_handle(int validation)
     {
         if (validation == 1)
         {
             System.out.println("Database Error");
+            return validation;
         }
         else if (validation == 2)
         {
             System.out.println("Invalid Provider");
+            return validation;
         }
         else if (validation == 0)
         {
             System.out.println("Access Granted");
+            return validation;
         }
+        return 3;
     }
 
     //function to bill a member
