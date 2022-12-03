@@ -8,13 +8,6 @@ public class Terminal
     private static Scanner input;
     private static ArrayList<Service> directory;
 
-    //populates the service directory
-//    public boolean get_service_directory()
-//    {
-//        directory = myjdbc.get_service_directory();
-//        return directory != null;
-//    }
-
     public Terminal(){
         input = new Scanner(System.in);
         directory = new ArrayList<>();
